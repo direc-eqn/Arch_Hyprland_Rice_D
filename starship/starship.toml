@@ -1,0 +1,25 @@
+# 1. Turn off the blank spacer line
+add_newline = false
+
+# 2. Draw the connecting lines directly into the layout
+format = """
+[╭─](bold bright-black) $os$directory
+[╰─](bold bright-black)$character """
+
+[os]
+disabled = false
+format = "[$symbol]($style)"
+style = "bold blue" 
+
+[os.symbols]
+Arch = " " 
+
+[directory]
+# Tightly formatted so it sits cleanly next to the line
+format = "[ ](bold blue)[$path]($style)[$read_only]($read_only_style)"
+style = "bold cyan"
+truncation_length = 0
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"

@@ -1,0 +1,94 @@
+/* ~/.config/waybar/style.css */
+@define-color highlight rgba(117, 241, 250, 1);
+@define-color dark-9 rgba(24, 24, 27, 1);
+@define-color dark-8 rgba(39, 39, 42, 1);
+@define-color dark-7 rgba(63, 63, 70, 1);
+@define-color dark-6 rgba(82, 82, 91, 1);
+@define-color dark-5 rgba(113, 113, 122, 1);
+
+* {
+  /* `otf-font-awesome` is required to be installed for icons */
+  font-family: JetBrainsMono Nerd Font Propo;
+  font-size: 13px;
+}
+
+window#waybar {
+  background-color: @dark-9;
+  color: white;
+  min-height: 26px; /* ◄ Directly clamps the maximum thinness of the bar */
+}
+
+#workspaces button {
+  padding: 0px 6px;       /* ◄ Reduced vertical padding to 0 */
+  margin: 4px 0px 4px 4px; /* ◄ Tighter top/bottom margins (down from 7px) */
+  background: transparent;
+  border-radius: 4px;
+  color: white;
+}
+
+#workspaces button.active {
+  background: @highlight;
+  margin: 4px 4px;        /* ◄ Matches the resting button height perfectly */
+  color: black;
+  font-weight: 700;
+}
+
+/* Unified container layout for all right side & center modules */
+#submap,
+#battery,
+#cpu,
+#memory,
+#temperature,
+#pulseaudio,
+#tray,
+#clock {
+  border-radius: 6px;
+  padding: 1px 8px;       /* ◄ Slimmed vertical inner padding (down from 5px) */
+  background: @dark-8;
+  margin: 4px 6px 4px 0px; /* ◄ Slimmed vertical outer margin (down from 5px) */
+}
+
+#submap,
+#workspaces button.urgent {
+  background: rgba(227, 81, 73, 1);
+  color: black;
+}
+
+/* Volume Slider controls */
+#pulseaudio-slider {
+  padding: 0px;
+  margin: 0px;
+  margin-left: 8px;
+}
+
+#pulseaudio-slider slider {
+  all: unset;
+  min-height: 0;
+  min-width: 0;
+  opacity: 0;
+  background-image: none;
+  border: none;
+  box-shadow: none;
+}
+
+#pulseaudio-slider trough {
+  min-height: 6px; /* ◄ Slightly slimmer slider track to fit the new height */
+  min-width: 75px;
+  border-radius: 5px;
+  background: @dark-7;
+}
+
+#pulseaudio-slider highlight {
+  min-width: 10px;
+  border-radius: 5px;
+  background: @highlight;
+}
+
+tooltip {
+  background: @dark-9;
+  border-radius: 5px;
+}
+
+tooltip label {
+  color: white;
+}

@@ -1,0 +1,121 @@
+{
+  "layer": "top",
+  "modules-left": ["hyprland/workspaces"],
+  "modules-center": ["group/temperature"],
+  "modules-right": [
+    "hyprland/submap",
+    "group/volume",
+    "battery",
+    "cpu",
+    "memory",
+    "tray",
+    "clock"
+  ],
+
+  "hyprland/workspaces": {
+    "disable-scroll": false,
+    "on-click": "activate",
+    "format": "{name}"
+  },
+  
+  "hyprland/window": {
+    "max-length": 50
+  },
+
+  "battery": {
+    "interval": 60,
+    "format": "{capacity}% {icon}",
+    "format-icons": {
+      "default": [
+        "󰂎",
+        "󰁺",
+        "󰁻",
+        "󰁼",
+        "󰁽",
+        "󰁾",
+        "󰁿",
+        "󰂀",
+        "󰂁",
+        "󰂂",
+        "󰁹"
+      ],
+      "charging": [
+        "󰢟",
+        "󰢜",
+        "󰂆",
+        "󰂇",
+        "󰂈",
+        "󰢝",
+        "󰂉",
+        "󰢞",
+        "󰂊",
+        "󰂋",
+        "󰂅"
+      ]
+    }
+  },
+
+  "cpu": {
+    "interval": 10,
+    "format": " {usage}%",
+    "max-length": 25,
+    "on-click": "exec alacritty --title=btop -e btop"
+  },
+
+  "memory": {
+    "interval": 30,
+    "format": " {percentage}%",
+    "tooltip-format": "{used:0.1f}G/{total:0.1f}G used",
+    "on-click": "exec alacritty --title=htop -e htop"
+  },
+
+  "temperature#cpu": {
+    "hwmon-path-abs": "/sys/devices/platform/coretemp.0/hwmon",
+    "input-filename": "temp1_input",
+    "critical-threshold": 80,
+    "format-critical": "CPU: {temperatureC}°C ",
+    "format": "CPU: {temperatureC}°C "
+  },
+
+  "group/temperature": {
+    "orientation": "horizontal",
+    "modules": ["temperature#cpu"]
+  },
+
+  "tray": {
+    "icon-size": 20,
+    "spacing": 10
+  },
+
+  "clock": {
+    "format": " 󰥔 {:%a, %d. %b %I:%M %p}",
+    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+    "calendar": {
+      "format": {
+        "today": "<span color='#75f1fa'><b>{}</b></span>"
+      }
+    }
+  },
+
+  "pulseaudio": {
+    "format": "{volume}% {icon}",
+    "format-muted": "",
+    "format-icons": {
+      "default": ["", ""]
+    },
+    "scroll-step": 1,
+    "ignored-sinks": ["Easy Effects Sink"],
+    "on-click": "pavucontrol"
+  },
+
+  "pulseaudio/slider": {
+    "min": 0,
+    "max": 100,
+    "orientation": "horizontal"
+  },
+
+  "group/volume": {
+    "orientation": "horizontal",
+    "modules": ["pulseaudio", "pulseaudio/slider"]
+  }
+}
