@@ -9,6 +9,9 @@ promptinit
 export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
 eval "$(starship init zsh)"
 
+ # SSH-Agent
+export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket" 
+
 
 # Wrapper that provides the ability to change the current working directory when exiting Yazi
 export EDITOR="nvim"

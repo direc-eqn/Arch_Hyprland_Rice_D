@@ -47,14 +47,17 @@ local screenshot_region = "hyprshot -m region"
 -- Autostart necessary processes (like notifications daemons, status bars, etc.)
 -- Or execute your favorite apps at launch like this:
 --
-hl.on("hyprland.start", function () 
+hl.on("hyprland.start", function ()
+    -- 1. Tell D-Bus and Systemd where the Wayland display is (CRITICAL)
+    hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP") 
+    hl.exec_cmd("systemctl --user start hyprpolkitagent &")
+
     hl.exec_cmd("blueman-applet &")
     hl.exec_cmd("nm-applet &")
     hl.exec_cmd("hyprpaper &")
-    hl.exec_cmd("waybar &")
     hl.exec_cmd("swaync &")
     hl.exec_cmd("hypridle &")
-    hl.exec_cmd("systemctl --user start hyprpolkitagent &")
+    hl.exec_cmd("waybar &")
 end)
 
 -------------------------------
@@ -69,9 +72,10 @@ hl.env("HYPRCURSOR_SIZE", "24")
 hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
 hl.env("LIBVA_DRIVER_NAME", "nvidia")
 hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
+hl.env("SSH_AUTH_SOCK", "$XDG_RUNTIME_DIR/ssh-agent.socket")
 
 -- Set your custom screenshot directory here:
-hl.env("HYPRSHOT_DIR", os.getenv("HOME") .. "/Pictures/Screenshots")
+hl.env("HYPRSHOT_DIR", "$HOME/Pictures/Screenshots")
 
 ----------------------
 ---- LOOK AND FEEL ----
