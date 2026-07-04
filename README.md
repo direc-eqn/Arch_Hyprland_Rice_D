@@ -1,0 +1,1 @@
+# Arch_Hyprland_Rice_D
