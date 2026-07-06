@@ -22,3 +22,46 @@ function y() {
 	[ "$cwd" != "$PWD" ] && [ -d "$cwd" ] && builtin cd -- "$cwd"
 	command rm -f -- "$tmp"
 }
+
+# Source the desired files from your
+source <(fzf --zsh)
+
+# Use fd instead of fzf
+export FZF_DEFAULT_COMMAND="fd --hidden --strip-cwd-prefix --exclude .git"
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_ALT_C_COMMAND="fd --type=d --hidden --strip-cwd-prefix --exclude .git"
+
+# Use fd for listing path candidates
+# - The first arugment to the fuction ($1) is the base path to start traversal
+# - See the source code (completion.{bash,zsh} for the details
+
+_fzf_compgen_path() {
+    fd --hidden --exclude .git . "$1"
+}
+
+_fzf_compgen_dir(){
+    fd --type=d --hidden --exclude .git . "$1"
+}
+
+# Set up previews with fzf
+export FZF_CTRL_T_OPTS="--preview 'bat -n --color=always --line-range :500 {}'"
+export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always {} | head -200'"
+
+_fzf_comprun() {
+    local command=$1
+    shift
+
+    case "$command" in 
+        cd)             fzf --preview 'eza --tree --color=always {} | head -200'                    "$@" ;;
+        export|unset)   fzf --preview "eval 'eza 'echo \$' {}"                                      "$@" ;;
+        ssh)            fzf --preview 'dig {}'                                                      "$@" ;;
+        *)              fzf --preview "--preview 'bat -n --color=always ==ling-range :500 {}'"      "$@" ;;
+    esac
+}
+
+# Alias list
+alias ls="eza --color=always --git --no-filesize --icons=always --no-time --no-user --no-permissions"
+alias cd="z"
+
+# Zoxide 
+eval "$(zoxide init zsh)"
