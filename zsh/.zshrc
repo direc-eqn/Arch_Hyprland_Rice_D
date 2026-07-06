@@ -60,7 +60,7 @@ _fzf_comprun() {
 }
 
 # Alias list
-alias ls="eza --color=always --git --no-filesize --icons=always --no-time --no-user --no-permissions"
+alias ls="eza --color=always --git --no-filesize --icons=always --no-time --no-user"
 alias cd="z"
 
 # Zoxide 
