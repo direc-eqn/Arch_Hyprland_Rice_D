@@ -8,6 +8,7 @@
     "battery",
     "cpu",
     "memory",
+    "custom/expressvpn",
     "tray",
     "clock"
   ],
@@ -58,7 +59,6 @@
   "cpu": {
     "interval": 10,
     "format": " {usage}%",
-    "max-length": 25,
     "on-click": "exec alacritty --title=btop -e btop"
   },
 
@@ -77,9 +77,26 @@
     "format": "CPU: {temperatureC}°C "
   },
 
+  "temperature#gpu": {
+    "hwmon-path-abs": "/sys/devices/platform/dell_smm_hwmon/hwmon",
+    "input-filename": "temp5_input",
+    "critical-threshold": 80,
+    "format-critical": "GPU: {temperatureC}°C ",
+    "format": "GPU: {temperatureC}°C "
+  },
+
   "group/temperature": {
     "orientation": "horizontal",
-    "modules": ["temperature#cpu"]
+    "modules": ["temperature#cpu", "temperature#gpu"]
+  },
+
+  "custom/expressvpn": {
+    "format": "{}",
+    "exec": "$HOME/.config/waybar/expressvpn.sh",
+    "return-type": "json",
+    "interval": 5,
+    "on-click": "$HOME/.config/waybar/expressvpn.sh toggle",
+    "on-click-right": "$HOME/.config/waybar/expressvpn.sh change-region"
   },
 
   "tray": {

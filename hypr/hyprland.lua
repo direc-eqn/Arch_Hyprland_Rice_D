@@ -75,7 +75,7 @@ hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
 hl.env("SSH_AUTH_SOCK", "$XDG_RUNTIME_DIR/ssh-agent.socket")
 
 -- Set your custom screenshot directory here:
-hl.env("HYPRSHOT_DIR", "$HOME/Pictures/Screenshots")
+hl.env("HYPRSHOT_DIR", "/home/nick/Pictures/Screenshots")
 
 ----------------------
 ---- LOOK AND FEEL ----

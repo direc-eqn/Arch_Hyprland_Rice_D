@@ -39,6 +39,7 @@ window#waybar {
 #cpu,
 #memory,
 #temperature,
+#custom-expressvpn,
 #pulseaudio,
 #tray,
 #clock {
@@ -46,6 +47,14 @@ window#waybar {
   padding: 1px 8px;       /* ◄ Slimmed vertical inner padding (down from 5px) */
   background: @dark-8;
   margin: 4px 6px 4px 0px; /* ◄ Slimmed vertical outer margin (down from 5px) */
+}
+
+#custom-expressvpn.connected {
+  color: @highlight;
+}
+
+#custom-expressvpn.connecting {
+  color: #f1fa8c;
 }
 
 #submap,
