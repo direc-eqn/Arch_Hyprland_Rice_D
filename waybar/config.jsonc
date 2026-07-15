@@ -1,6 +1,6 @@
 {
   "layer": "top",
-  "modules-left": ["hyprland/workspaces"],
+  "modules-left": ["ext/workspaces"],
   "modules-center": ["group/temperature"],
   "modules-right": [
     "hyprland/submap",
@@ -13,7 +13,7 @@
     "clock"
   ],
 
-  "hyprland/workspaces": {
+  "ext/workspaces": {
     "disable-scroll": false,
     "on-click": "activate",
     "format": "{name}"
