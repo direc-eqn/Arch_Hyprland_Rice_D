@@ -58,7 +58,30 @@ hl.on("hyprland.start", function ()
     hl.exec_cmd("swaync &")
     hl.exec_cmd("hypridle &")
     hl.exec_cmd("waybar &")
+
+    -- Check if laptop lid is closed on startup
+    local handle = io.popen("cat /proc/acpi/button/lid/*/state 2>/dev/null")
+    if handle then
+        local result = handle:read("*a")
+        handle:close()
+        if result and result:find("closed") then
+            hl.monitor({ output = "eDP-1", disabled = true })
+        end
+    end
 end)
+
+----------------------------
+---- LAPTOP LID SWITCH -----
+----------------------------
+
+hl.bind("switch:on:Lid Switch", function()
+    hl.monitor({ output = "eDP-1", disabled = true })
+end)
+
+hl.bind("switch:off:Lid Switch", function()
+    hl.monitor({ output = "eDP-1", mode = "preferred", position = "auto", scale = "1.2", disabled = false })
+end)
+
 
 -------------------------------
 ---- ENVIRONMENT VARIABLES ----
