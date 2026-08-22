@@ -62,6 +62,7 @@ _fzf_comprun() {
 # Alias list
 alias ls="eza --color=always --git --no-filesize --icons=always --no-time --no-user"
 alias cd="z"
+alias ly="lazygit"
 
 # Zoxide 
 eval "$(zoxide init zsh)"
