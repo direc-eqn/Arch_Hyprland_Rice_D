@@ -233,10 +233,6 @@ hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))    -- dwindle only
 
--- Move and resize floating windows with Super + mouse dragging.
-hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
-hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
-
 -- Move focus with mainMod + arrow keys
 hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }))
 hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }))
@@ -265,27 +261,6 @@ hl.bind(mainMod ..  " + L", hl.dsp.exec_cmd("hyprlock"))
 
 -- See https://wiki.hypr.land/Configuring/Basics/Window-Rules/
 -- and https://wiki.hypr.land/Configuring/Basics/Workspace-Rules/
-
--- Keep modal dialogs above the tiled layout without splitting a tile.
-hl.window_rule({
-    name = "float-modal-dialogs",
-    match = { modal = true },
-    float = true,
-})
-
--- Native file chooser portals can appear as separate non-modal windows.
-hl.window_rule({
-    name = "float-file-chooser-portals",
-    match = { class = "^(xdg-desktop-portal-gtk|xdg-desktop-portal-kde|org\\.freedesktop\\.impl\\.portal\\.desktop\\.kde)$" },
-    float = true,
-})
-
--- Common file chooser titles for apps that omit the modal hint.
-hl.window_rule({
-    name = "float-file-chooser-dialogs",
-    match = { initial_title = "^(Open File|Open Files|Open Folder|Save File|Save As|Save As\\.\\.\\.|Save As…|Select File|Select Files|Select Folder|Choose File|Choose Files|Choose Folder|File Upload)( - .*)?$" },
-    float = true,
-})
 
 -- Example window rules that are useful
 
