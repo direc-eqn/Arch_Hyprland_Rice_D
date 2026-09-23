@@ -1,23 +1,25 @@
-### AL ###
-#Template for AL projects for Dynamics 365 Business Central
-#launch.json folder
+# Personal overrides and credentials: keep them out of the dotfiles repository.
+.env
+.env.*
+!.env.example
+**/local.lua
+**/*.local.conf
+**/credentials*
+**/secrets*
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+
+# Backups, editor state, logs, and generated files.
+*.backup*
+*.bak
+*~
+*.swp
+*.swo
+*.log
+__pycache__/
+*.py[cod]
+.cache/
+.DS_Store
 .vscode/
-#Cache folder
-.alcache/
-#Symbols folder
-.alpackages/
-#Snapshots folder
-.snapshots/
-#Testing Output folder
-.output/
-#Extension App-file
-*.app
-#Rapid Application Development File
-rad.json
-#Translation Base-file
-*.g.xlf
-#License-files
-*.bclicense
-*.flf
-#Test results file
-TestResults.xml

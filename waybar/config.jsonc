@@ -1,138 +1,215 @@
+// Layout and click actions. Colors and spacing live in style.css.
+// Hover CPU for hardware details; hover volume for its slider.
 {
   "layer": "top",
-  "modules-left": ["ext/workspaces"],
-  "modules-center": ["group/temperature"],
-  "modules-right": [
-    "hyprland/submap",
-    "group/volume",
-    "battery",
-    "cpu",
-    "memory",
-    "custom/expressvpn",
-    "tray",
+  "position": "top",
+  "height": 38,
+  "margin-top": 0,
+  "margin-left": 0,
+  "margin-right": 0,
+  "spacing": 4,
+  "fixed-center": true,
+  "reload_style_on_change": true,
+  "modules-left": [
+    "custom/launcher",
+    "ext/workspaces",
+    "hyprland/submap"
+  ],
+  "modules-center": [
     "clock"
   ],
-
+  "modules-right": [
+    "group/hardware",
+    "custom/expressvpn",
+    "network",
+    "group/volume",
+    "battery",
+    "idle_inhibitor",
+    "tray",
+    "custom/notifications",
+    "custom/help",
+    "custom/power"
+  ],
+  "custom/launcher": {
+    "format": "󰣇",
+    "tooltip-format": "Applications · Super + R",
+    "on-click": "rofi -show drun -show-icons"
+  },
   "ext/workspaces": {
-    "disable-scroll": false,
+    "format": "{name}",
     "on-click": "activate",
-    "format": "{name}"
+    "sort-by-id": true
   },
-  
-  "hyprland/window": {
-    "max-length": 50
+  "hyprland/submap": {
+    "format": "{}",
+    "tooltip": false
   },
-
-  "battery": {
-    "interval": 60,
-    "format": "{capacity}% {icon}",
-    "format-icons": {
-      "default": [
-        "󰂎",
-        "󰁺",
-        "󰁻",
-        "󰁼",
-        "󰁽",
-        "󰁾",
-        "󰁿",
-        "󰂀",
-        "󰂁",
-        "󰂂",
-        "󰁹"
-      ],
-      "charging": [
-        "󰢟",
-        "󰢜",
-        "󰂆",
-        "󰂇",
-        "󰂈",
-        "󰢝",
-        "󰂉",
-        "󰢞",
-        "󰂊",
-        "󰂋",
-        "󰂅"
-      ]
+  "clock": {
+    "format": "{:%a %d %b  ·  %H:%M}",
+    "format-alt": "{:%A, %d %B %Y · %I:%M %p}",
+    "tooltip-format": "<tt><small>{calendar}</small></tt>\n<small>Scroll over the clock: previous / next month</small>",
+    "calendar": {
+      "mode": "month",
+      "format": {
+        "today": "<span color='#7dd3c7'><b>{}</b></span>"
+      },
+      "on-scroll": 1
+    },
+    "actions": {
+      "on-scroll-up": "shift_down",
+      "on-scroll-down": "shift_up"
     }
   },
-
-  "cpu": {
-    "interval": 10,
-    "format": " {usage}%",
-    "on-click": "exec alacritty --title=btop -e btop"
-  },
-
-  "memory": {
-    "interval": 30,
-    "format": " {percentage}%",
-    "tooltip-format": "{used:0.1f}G/{total:0.1f}G used",
-    "on-click": "exec alacritty --title=htop -e htop"
-  },
-
-  "temperature#cpu": {
-    "hwmon-path-abs": "/sys/devices/platform/coretemp.0/hwmon",
-    "input-filename": "temp1_input",
-    "critical-threshold": 80,
-    "format-critical": "CPU: {temperatureC}°C ",
-    "format": "CPU: {temperatureC}°C "
-  },
-
-  "temperature#gpu": {
-    "hwmon-path-abs": "/sys/devices/platform/dell_smm_hwmon/hwmon",
-    "input-filename": "temp5_input",
-    "critical-threshold": 80,
-    "format-critical": "GPU: {temperatureC}°C ",
-    "format": "GPU: {temperatureC}°C "
-  },
-
-  "group/temperature": {
+  "group/hardware": {
     "orientation": "horizontal",
-    "modules": ["temperature#cpu", "temperature#gpu"]
+    "drawer": {
+      "transition-duration": 180,
+      "children-class": "hardware-detail"
+    },
+    "modules": [
+      "cpu",
+      "memory",
+      "custom/cpu-temperature",
+      "custom/gpu-temperature"
+    ]
   },
-
+  "cpu": {
+    "interval": 5,
+    "format": " {usage}%",
+    "tooltip-format": "CPU: {usage}% · load {load}\nHover for RAM and temperatures\nClick: system monitor",
+    "on-click": "kitty --title btop -e btop"
+  },
+  "memory": {
+    "interval": 10,
+    "format": " {percentage}%",
+    "tooltip-format": "RAM: {used:0.1f} / {total:0.1f} GiB\nClick: system monitor",
+    "on-click": "kitty --title btop -e btop"
+  },
+  "custom/cpu-temperature": {
+    "exec": "python3 \"$HOME/.config/waybar/scripts/temperature.py\" cpu",
+    "return-type": "json",
+    "interval": 10,
+    "format": "{}"
+  },
+  "custom/gpu-temperature": {
+    "exec": "python3 \"$HOME/.config/waybar/scripts/temperature.py\" gpu",
+    "return-type": "json",
+    "interval": 10,
+    "format": "{}"
+  },
   "custom/expressvpn": {
-    "format": "{}",
-    "exec": "$HOME/.config/waybar/expressvpn.sh",
+    "exec": "\"$HOME/.config/waybar/expressvpn.sh\"",
     "return-type": "json",
     "interval": 5,
-    "on-click": "$HOME/.config/waybar/expressvpn.sh toggle",
-    "on-click-right": "$HOME/.config/waybar/expressvpn.sh change-region"
+    "format": "{}",
+    "escape": true,
+    "on-click": "\"$HOME/.config/waybar/expressvpn.sh\" toggle",
+    "on-click-right": "\"$HOME/.config/waybar/expressvpn.sh\" change-region"
   },
-
-  "tray": {
-    "icon-size": 20,
-    "spacing": 10
+  "network": {
+    "format-wifi": "",
+    "format-ethernet": "󰈀",
+    "format-disconnected": "󰖪",
+    "tooltip-format-wifi": "Wi-Fi · {signalStrength}% signal\nClick: connection settings",
+    "tooltip-format-ethernet": "Ethernet connected\nClick: connection settings",
+    "tooltip-format-disconnected": "Network disconnected\nClick: connection settings",
+    "on-click": "nm-connection-editor"
   },
-
-  "clock": {
-    "format": " 󰥔 {:%a, %d. %b %I:%M %p}",
-    "tooltip-format": "<tt><small>{calendar}</small></tt>",
-    "calendar": {
-      "format": {
-        "today": "<span color='#75f1fa'><b>{}</b></span>"
-      }
-    }
-  },
-
-  "pulseaudio": {
-    "format": "{volume}% {icon}",
-    "format-muted": "",
-    "format-icons": {
-      "default": ["", ""]
+  "group/volume": {
+    "orientation": "horizontal",
+    "drawer": {
+      "transition-duration": 180,
+      "children-class": "volume-detail"
     },
-    "scroll-step": 1,
-    "ignored-sinks": ["Easy Effects Sink"],
-    "on-click": "pavucontrol"
+    "modules": [
+      "pulseaudio",
+      "pulseaudio/slider"
+    ]
   },
-
+  "pulseaudio": {
+    "format": "{icon} {volume}%",
+    "format-muted": "󰝟 Muted",
+    "format-icons": {
+      "default": [
+        "",
+        "",
+        ""
+      ]
+    },
+    "scroll-step": 2,
+    "max-volume": 100,
+    "ignored-sinks": [
+      "Easy Effects Sink"
+    ],
+    "tooltip-format": "Volume: {volume}%\nScroll: adjust · click: sound settings\nRight-click: mute · hover: slider",
+    "on-click": "pavucontrol",
+    "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
+  },
   "pulseaudio/slider": {
     "min": 0,
     "max": 100,
     "orientation": "horizontal"
   },
-
-  "group/volume": {
-    "orientation": "horizontal",
-    "modules": ["pulseaudio", "pulseaudio/slider"]
+  "battery": {
+    "interval": 30,
+    "states": {
+      "warning": 25,
+      "critical": 10
+    },
+    "format": "{icon} {capacity}%",
+    "format-charging": "󰂄 {capacity}%",
+    "format-plugged": "󰚥 {capacity}%",
+    "format-full": "󰁹 Full",
+    "format-icons": [
+      "󰂎",
+      "󰁻",
+      "󰁾",
+      "󰂁",
+      "󰁹"
+    ],
+    "tooltip-format": "{capacity}% · {timeTo}\nPower: {power:0.1f} W"
+  },
+  "idle_inhibitor": {
+    "format": "{icon}",
+    "format-icons": {
+      "activated": "󰅶",
+      "deactivated": "󰾪"
+    },
+    "tooltip-format-activated": "Stay awake is ON · click to allow idle lock / sleep",
+    "tooltip-format-deactivated": "Automatic idle lock / sleep · click to stay awake"
+  },
+  "tray": {
+    "icon-size": 16,
+    "spacing": 8
+  },
+  "custom/notifications": {
+    "exec": "swaync-client -swb",
+    "return-type": "json",
+    "format": "{icon}",
+    "format-icons": {
+      "notification": "󱅫",
+      "none": "󰂚",
+      "dnd-notification": "󰂛",
+      "dnd-none": "󰂛",
+      "inhibited-notification": "󰂛",
+      "inhibited-none": "󰂛",
+      "dnd-inhibited-notification": "󰂛",
+      "dnd-inhibited-none": "󰂛"
+    },
+    "tooltip": false,
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "restart-interval": 5
+  },
+  "custom/help": {
+    "format": "󰋖",
+    "tooltip-format": "Keyboard shortcuts · Super + /",
+    "on-click": "\"$HOME/.config/hypr/scripts/shortcuts.sh\""
+  },
+  "custom/power": {
+    "format": "⏻",
+    "tooltip-format": "Power menu: Lock · Sleep · Shutdown · Reboot\nRight-click: lock screen",
+    "on-click": "\"$HOME/.config/waybar/scripts/power-menu.sh\"",
+    "on-click-right": "pidof hyprlock || hyprlock"
   }
 }

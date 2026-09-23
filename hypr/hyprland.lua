@@ -1,347 +1,157 @@
--- This is an example Hyprland Lua config file.
--- Refer to the wiki for more information.
--- https://wiki.hypr.land/Configuring/Start/
+-- Hyprland 0.56+ (Lua). Start here; Waybar's appearance lives in waybar/style.css.
+-- Personal overrides can go in ~/.config/hypr/local.lua (ignored by Git).
+-- Shortcut guide: Super + / or the ? button on Waybar.
 
--- Please note not all available settings / options are set here.
--- For a full list, see the wiki
+-- 1. Preferences ---------------------------------------------------------------
+local home = os.getenv("HOME")
+local configHome = os.getenv("XDG_CONFIG_HOME") or (home .. "/.config")
+local mainMod = "SUPER"
+local terminal = "kitty"
+local fileManager = "kitty -e yazi"
+local menu = "rofi -show drun -show-icons"
+local laptopOutput = "eDP-1" -- Find output names with: hyprctl monitors
+local laptopScale = 1.2
 
--- You can (and should!!) split this configuration into multiple files
--- Create your files separately and then require them like this:
--- require("myColors")
-
-
-------------------
----- MONITORS ----
-------------------
-
--- See https://wiki.hypr.land/Configuring/Basics/Monitors/
-hl.monitor({
-    output   = "",
-    mode     = "preferred",
-    position = "auto",
-    scale    = "auto",
-})
-
-hl.monitor({
-    output   = "eDP-1",
-    mode     = "preferred",
-    position = "auto",
-    scale    = "1.2",
-})
----------------------
----- MY PROGRAMS ----
----------------------
-
--- Set programs that you use
-local terminal          = "kitty"
-local fileManager       = "kitty -e yazi"
-local menu              = "rofi -show drun -show-icons"
-local screenshot_region = "hyprshot -m region"
-
--------------------
----- AUTOSTART ----
--------------------
-
--- See https://wiki.hypr.land/Configuring/Basics/Autostart/
-
--- Autostart necessary processes (like notifications daemons, status bars, etc.)
--- Or execute your favorite apps at launch like this:
---
-hl.on("hyprland.start", function ()
-    -- 1. Tell D-Bus and Systemd where the Wayland display is (CRITICAL)
-    hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP") 
-    hl.exec_cmd("systemctl --user start hyprpolkitagent &")
-
-    hl.exec_cmd("blueman-applet &")
-    hl.exec_cmd("nm-applet &")
-    hl.exec_cmd("hyprpaper &")
-    hl.exec_cmd("swaync &")
-    hl.exec_cmd("hypridle &")
-    hl.exec_cmd("waybar &")
-
-    -- Check if laptop lid is closed on startup
-    local handle = io.popen("cat /proc/acpi/button/lid/*/state 2>/dev/null")
-    if handle then
-        local result = handle:read("*a")
-        handle:close()
-        if result and result:find("closed") then
-            hl.monitor({ output = "eDP-1", disabled = true })
+-- 2. Displays and laptop lid ----------------------------------------------------
+hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })
+local function enableLaptop()
+    hl.monitor({ output = laptopOutput, mode = "preferred", position = "auto",
+                 scale = laptopScale, disabled = false })
+end
+local function closeLid()
+    -- Never disable the only display. With an external display, keep working there.
+    for _, monitor in ipairs(hl.get_monitors()) do
+        if monitor.name ~= laptopOutput then
+            hl.monitor({ output = laptopOutput, disabled = true })
+            return
         end
     end
-end)
+end
+enableLaptop()
+hl.bind("switch:on:Lid Switch", closeLid)
+hl.bind("switch:off:Lid Switch", enableLaptop)
 
-----------------------------
----- LAPTOP LID SWITCH -----
-----------------------------
-
-hl.bind("switch:on:Lid Switch", function()
-    hl.monitor({ output = "eDP-1", disabled = true })
-end)
-
-hl.bind("switch:off:Lid Switch", function()
-    hl.monitor({ output = "eDP-1", mode = "preferred", position = "auto", scale = "1.2", disabled = false })
-end)
-
-
--------------------------------
----- ENVIRONMENT VARIABLES ----
--------------------------------
-
--- See https://wiki.hypr.land/Configuring/Advanced-and-Cool/Environment-variables/
-
-
+-- 3. Environment and startup ---------------------------------------------------
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
 hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
+-- This laptop uses NVIDIA. Remove these two lines on systems without NVIDIA.
 hl.env("LIBVA_DRIVER_NAME", "nvidia")
 hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
 hl.env("SSH_AUTH_SOCK", "$XDG_RUNTIME_DIR/ssh-agent.socket")
+hl.env("HYPRSHOT_DIR", home .. "/Pictures/Screenshots")
 
--- Set your custom screenshot directory here:
-hl.env("HYPRSHOT_DIR", "/home/nick/Pictures/Screenshots")
+hl.on("hyprland.start", function()
+    hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP")
+    hl.exec_cmd("systemctl --user start hyprpolkitagent")
+    for _, program in ipairs({ "blueman-applet", "nm-applet", "hyprpaper", "swaync", "hypridle", "waybar" }) do
+        hl.exec_cmd("command -v " .. program .. " >/dev/null 2>&1 && " .. program)
+    end
+    -- To enable the schedule in hyprsunset.conf, add "hyprsunset" to the list above.
+    local handle = io.popen("cat /proc/acpi/button/lid/*/state 2>/dev/null")
+    if handle then
+        local state = handle:read("*a")
+        handle:close()
+        if state and state:find("closed") then closeLid() end
+    end
+end)
 
-----------------------
----- LOOK AND FEEL ----
------------------------
-
--- Refer to https://wiki.hypr.land/Configuring/Basics/Variables/
+-- 4. Appearance and input ------------------------------------------------------
+-- Teal accents match Waybar. Blur and shadows stay off to limit GPU use.
 hl.config({
     general = {
-        gaps_in  = 2,
+        gaps_in = 2,
         gaps_out = 10,
-
         border_size = 2,
-
-        col = {
-            active_border   =  "rgba(33ccffee)",
-            inactive_border = "rgba(595959aa)",
-        },
-
-        -- Set to true to enable resizing windows by clicking and dragging on borders and gaps
+        col = { active_border = "rgba(7dd3c7ff)", inactive_border = "rgba(354553aa)" },
         resize_on_border = true,
-
-        -- Please see https://wiki.hypr.land/Configuring/Advanced-and-Cool/Tearing/ before you turn this on
         allow_tearing = false,
-
         layout = "dwindle",
     },
-
     decoration = {
-	rounding = 10,
-	rounding_power = 2,
-
-	shadow = {
-		enabled = false
-	},
-
-	blur = {
-		enabled = false
-	}
+        rounding = 10,
+        rounding_power = 2,
+        shadow = { enabled = false },
+        blur = { enabled = false },
     },
-
-    animations = {
-	enabled = true
-
-    }
-
-})
-
--- See https://wiki.hypr.land/Configuring/Layouts/Dwindle-Layout/ for more
-hl.config({
-    dwindle = {
-        preserve_split = true, -- You probably want this
-    },
-})
-
--- See https://wiki.hypr.land/Configuring/Layouts/Master-Layout/ for more
-hl.config({
-    master = {
-        new_status = "master",
-    },
-})
-
--- See https://wiki.hypr.land/Configuring/Layouts/Scrolling-Layout/ for more
-hl.config({
-    scrolling = {
-        fullscreen_on_one_column = true,
-    },
-})
-
-----------------
-----  MISC  ----
-----------------
-
-hl.config({
+    animations = { enabled = true },
+    dwindle = { preserve_split = true },
     misc = {
-        force_default_wallpaper = -1,    -- Set to 0 or 1 to disable the anime mascot wallpapers
-        disable_hyprland_logo   = false, -- If true disables the random hyprland logo / anime girl background. :(
+        force_default_wallpaper = -1,
+        disable_hyprland_logo = true,
+        vrr = 1, -- Adaptive sync where supported by the monitor.
     },
-})
-
-
----------------
----- INPUT ----
----------------
-
-hl.config({
     input = {
-        kb_layout  = "us",
-        kb_variant = "",
-        kb_model   = "",
-        kb_options = "",
-        kb_rules   = "",
-
+        kb_layout = "us",
         follow_mouse = 1,
-
-        sensitivity = 0, -- -1.0 - 1.0, 0 means no modification.
-
-        touchpad = {
-            natural_scroll = false,
-	    scroll_factor = 0.4
-        },
+        sensitivity = 0,
+        touchpad = { natural_scroll = false, scroll_factor = 0.4 },
     },
+    xwayland = { force_zero_scaling = true },
 })
+hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 
-hl.gesture({
-    fingers = 3,
-    direction = "horizontal",
-    action = "workspace"
-})
-
--- Example per-device config
--- See https://wiki.hypr.land/Configuring/Advanced-and-Cool/Devices/ for more
-hl.device({
-    name        = "epic-mouse-v1",
-    sensitivity = -0.5,
-})
-
-
----------------------
----- KEYBINDINGS ----
----------------------
-
-local mainMod = "SUPER" -- Sets "Windows" key as main modifier
-
--- Example binds, see https://wiki.hypr.land/Configuring/Basics/Binds/ for more
+-- 5. Keyboard and mouse --------------------------------------------------------
 hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))
-local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())
--- closeWindowBind:set_enabled(false)
-hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"))
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
-hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
+hl.bind(mainMod .. " + C", hl.dsp.window.close())
+hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
+hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ action = "toggle" }))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
-hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))    -- dwindle only
+hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))
+hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"))
 
--- Move and resize floating windows with Super + mouse dragging.
-hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
+hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
-
--- Move focus with mainMod + arrow keys
-hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }))
-hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }))
-hl.bind(mainMod .. " + up",    hl.dsp.focus({ direction = "up" }))
-hl.bind(mainMod .. " + down",  hl.dsp.focus({ direction = "down" }))
-
--- Switch workspaces with mainMod + [0-9]
--- Move active window to a workspace with mainMod + SHIFT + [0-9]
-for i = 1, 10 do
-    local key = i % 10 -- 10 maps to key 0
-    hl.bind(mainMod .. " + " .. key,             hl.dsp.focus({ workspace = i}))
-    hl.bind(mainMod .. " + SHIFT + " .. key,     hl.dsp.window.move({ workspace = i }))
+for _, direction in ipairs({ "left", "right", "up", "down" }) do
+    hl.bind(mainMod .. " + " .. direction, hl.dsp.focus({ direction = direction }))
 end
-
-
--- Scroll through existing workspaces with mainMod + scroll
+for workspace = 1, 10 do
+    local key = workspace % 10
+    hl.bind(mainMod .. " + " .. key, hl.dsp.focus({ workspace = workspace }))
+    hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = workspace }))
+end
 hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
-hl.bind(mainMod .. " + mouse_up",   hl.dsp.focus({ workspace = "e-1" }))
+hl.bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "e-1" }))
+hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd("hyprshot -m region"))
+hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("pidof hyprlock || hyprlock"))
+hl.bind(mainMod .. " + N", hl.dsp.exec_cmd("swaync-client -t -sw"))
+hl.bind(mainMod .. " + SHIFT + N", hl.dsp.exec_cmd("swaync-client -d -sw"))
+hl.bind(mainMod .. " + slash", hl.dsp.exec_cmd('"' .. configHome .. '/hypr/scripts/shortcuts.sh"'))
+hl.bind(mainMod .. " + SHIFT + R", hl.dsp.exec_cmd("hyprctl reload && pkill -USR2 -x waybar"))
 
--- Screenshot with hyprshot, hyprlock
-hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd(screenshot_region))
-hl.bind(mainMod ..  " + L", hl.dsp.exec_cmd("hyprlock"))
---------------------------------
----- WINDOWS AND WORKSPACES ----
---------------------------------
+-- These work while locked; repeating volume keys are capped at 100%.
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"), { locked = true, repeating = true })
+hl.bind("XF86AudioMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"), { locked = true })
+hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"), { locked = true })
 
--- See https://wiki.hypr.land/Configuring/Basics/Window-Rules/
--- and https://wiki.hypr.land/Configuring/Basics/Workspace-Rules/
-
--- Keep modal dialogs above the tiled layout without splitting a tile.
-hl.window_rule({
-    name = "float-modal-dialogs",
-    match = { modal = true },
-    float = true,
-})
-
--- Native file chooser portals can appear as separate non-modal windows.
+-- 6. Window rules --------------------------------------------------------------
+-- Modal dialogs float above the tiles; some apps need file-chooser fallbacks.
+hl.window_rule({ name = "float-modal-dialogs", match = { modal = true }, float = true })
 hl.window_rule({
     name = "float-file-chooser-portals",
     match = { class = "^(xdg-desktop-portal-gtk|xdg-desktop-portal-kde|org\\.freedesktop\\.impl\\.portal\\.desktop\\.kde)$" },
     float = true,
 })
-
--- Common file chooser titles for apps that omit the modal hint.
 hl.window_rule({
     name = "float-file-chooser-dialogs",
     match = { initial_title = "^(Open File|Open Files|Open Folder|Save File|Save As|Save As\\.\\.\\.|Save As…|Select File|Select Files|Select Folder|Choose File|Choose Files|Choose Folder|File Upload)( - .*)?$" },
     float = true,
 })
-
--- Example window rules that are useful
-
-local suppressMaximizeRule = hl.window_rule({
-    -- Ignore maximize requests from all apps. You'll probably like this.
-    name  = "suppress-maximize-events",
-    match = { class = ".*" },
-
-    suppress_event = "maximize",
-})
--- suppressMaximizeRule:set_enabled(false)
-
+hl.window_rule({ name = "suppress-maximize-events", match = { class = ".*" }, suppress_event = "maximize" })
 hl.window_rule({
-    -- Fix some dragging issues with XWayland
-    name  = "fix-xwayland-drags",
-    match = {
-        class      = "^$",
-        title      = "^$",
-        xwayland   = true,
-        float      = true,
-        fullscreen = false,
-        pin        = false,
-    },
-
+    name = "fix-xwayland-drags",
+    match = { class = "^$", title = "^$", xwayland = true, float = true, fullscreen = false, pin = false },
     no_focus = true,
 })
+hl.window_rule({ name = "move-hyprland-run", match = { class = "hyprland-run" }, move = "20 monitor_h-120", float = true })
 
--- Hyprland-run windowrule
-hl.window_rule({
-    name  = "move-hyprland-run",
-    match = { class = "hyprland-run" },
-
-    move  = "20 monitor_h-120",
-    float = true,
-})
-
--- disab waylanad scalling on apps and let each app natively render
-hl.config({
-  xwayland = {
-    force_zero_scaling = true
-  }
-})
-
--- Optimize for low GPU usage
-hl.config({
-    -- Top-level Decoration Table
-    decoration = {
-        blur = {
-            enabled = false,       -- Correctly nested under decoration.blur
-        }
-    },
-
-    -- SEPARATE Top-level Misc Table (Do not nest inside decoration!)
-    misc = {
-        vrr = 1,                  -- Forces Adaptive Sync
-    }
-})
-
-
+-- 7. Optional machine-specific overrides --------------------------------------
+local localPath = configHome .. "/hypr/local.lua"
+local localFile = io.open(localPath, "r")
+if localFile then
+    localFile:close()
+    dofile(localPath)
+end

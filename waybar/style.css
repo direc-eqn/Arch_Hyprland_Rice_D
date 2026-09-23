@@ -1,103 +1,98 @@
-/* ~/.config/waybar/style.css */
-@define-color highlight rgba(117, 241, 250, 1);
-@define-color dark-9 rgba(24, 24, 27, 1);
-@define-color dark-8 rgba(39, 39, 42, 1);
-@define-color dark-7 rgba(63, 63, 70, 1);
-@define-color dark-6 rgba(82, 82, 91, 1);
-@define-color dark-5 rgba(113, 113, 122, 1);
+/* Change these colors to theme the entire bar. GTK CSS, not browser CSS. */
+@define-color base #141b24;
+@define-color surface #202b38;
+@define-color hover #2b3b49;
+@define-color border #354553;
+@define-color text #e3eaf2;
+@define-color muted #98aabb;
+@define-color accent #7dd3c7;
+@define-color warning #edc685;
+@define-color danger #f28f9c;
 
 * {
-  /* `otf-font-awesome` is required to be installed for icons */
-  font-family: JetBrainsMono Nerd Font Propo;
-  font-size: 13px;
+    font-family: "JetBrainsMono Nerd Font Propo", "Adwaita Sans", sans-serif;
+    font-size: 12px;
+    min-height: 0;
+    border: none;
+    border-radius: 0;
 }
-
 window#waybar {
-  background-color: @dark-9;
-  color: white;
-  min-height: 26px; /* ◄ Directly clamps the maximum thinness of the bar */
+    background: @base;
+    color: @text;
+    border: 1px solid @border;
+    border-top: none;
+    border-radius: 0 0 12px 12px;
 }
-
+.modules-left { padding-left: 5px; }
+.modules-right { padding-right: 5px; }
+#workspaces { padding: 3px 0; }
 #workspaces button {
-  padding: 0px 6px;       /* ◄ Reduced vertical padding to 0 */
-  margin: 4px 0px 4px 4px; /* ◄ Tighter top/bottom margins (down from 7px) */
-  background: transparent;
-  border-radius: 4px;
-  color: white;
+    min-width: 24px;
+    padding: 0 5px;
+    margin: 1px 2px;
+    border-radius: 7px;
+    color: @muted;
+    background: transparent;
+    box-shadow: none;
+    text-shadow: none;
 }
-
 #workspaces button.active {
-  background: @highlight;
-  margin: 4px 4px;        /* ◄ Matches the resting button height perfectly */
-  color: black;
-  font-weight: 700;
+    color: @base;
+    background: @accent;
+    font-weight: bold;
 }
-
-/* Unified container layout for all right side & center modules */
-#submap,
-#battery,
-#cpu,
-#memory,
-#temperature,
-#custom-expressvpn,
-#pulseaudio,
-#tray,
-#clock {
-  border-radius: 6px;
-  padding: 1px 8px;       /* ◄ Slimmed vertical inner padding (down from 5px) */
-  background: @dark-8;
-  margin: 4px 6px 4px 0px; /* ◄ Slimmed vertical outer margin (down from 5px) */
+#workspaces button:hover { background: @hover; color: @text; }
+#workspaces button.urgent { background: @danger; color: @base; }
+#custom-launcher, #submap, #clock, #cpu, #memory,
+#custom-cpu-temperature, #custom-gpu-temperature, #custom-expressvpn,
+#network, #pulseaudio, #battery, #idle_inhibitor, #tray,
+#custom-notifications, #custom-help, #custom-power {
+    padding: 0 9px;
+    margin: 4px 0;
+    border-radius: 8px;
 }
-
-#custom-expressvpn.connected {
-  color: @highlight;
+#custom-launcher { color: @accent; font-size: 19px; padding: 0 10px; }
+#clock { font-weight: bold; background: @surface; padding: 0 14px; }
+#cpu, #memory, #custom-cpu-temperature, #custom-gpu-temperature { color: @muted; }
+#cpu { background: @surface; color: @text; }
+#custom-expressvpn { background: @surface; }
+#custom-expressvpn.connected { color: @accent; }
+#custom-expressvpn.connecting, #battery.warning { color: @warning; }
+#custom-expressvpn.disconnected, #custom-expressvpn.unavailable,
+#pulseaudio.muted, #idle_inhibitor { color: @muted; }
+#custom-expressvpn.error, #network.disconnected,
+#custom-cpu-temperature.critical, #custom-gpu-temperature.critical { color: @danger; }
+#battery.charging, #battery.plugged, #idle_inhibitor.activated { color: @accent; }
+#battery.critical:not(.charging):not(.plugged), #submap {
+    color: @base;
+    background: @danger;
 }
-
-#custom-expressvpn.connecting {
-  color: #f1fa8c;
+#custom-power { color: @accent; }
+#custom-help { color: @muted; }
+#custom-launcher:hover, #cpu:hover, #memory:hover, #custom-expressvpn:hover,
+#network:hover, #pulseaudio:hover, #idle_inhibitor:hover,
+#custom-notifications:hover, #custom-help:hover, #custom-power:hover {
+    background: @hover;
 }
-
-#submap,
-#workspaces button.urgent {
-  background: rgba(227, 81, 73, 1);
-  color: black;
-}
-
-/* Volume Slider controls */
-#pulseaudio-slider {
-  padding: 0px;
-  margin: 0px;
-  margin-left: 8px;
-}
-
-#pulseaudio-slider slider {
-  all: unset;
-  min-height: 0;
-  min-width: 0;
-  opacity: 0;
-  background-image: none;
-  border: none;
-  box-shadow: none;
-}
-
+/* Hover volume to reveal the slider. */
+#pulseaudio-slider { margin: 0 10px 0 3px; }
 #pulseaudio-slider trough {
-  min-height: 6px; /* ◄ Slightly slimmer slider track to fit the new height */
-  min-width: 75px;
-  border-radius: 5px;
-  background: @dark-7;
+    min-width: 70px;
+    min-height: 5px;
+    border-radius: 5px;
+    background: @border;
 }
-
-#pulseaudio-slider highlight {
-  min-width: 10px;
-  border-radius: 5px;
-  background: @highlight;
+#pulseaudio-slider highlight { border-radius: 5px; background: @accent; }
+#pulseaudio-slider slider {
+    min-width: 9px;
+    min-height: 9px;
+    border-radius: 50%;
+    background: @text;
+    box-shadow: none;
 }
-
 tooltip {
-  background: @dark-9;
-  border-radius: 5px;
+    background: @base;
+    border: 1px solid @border;
+    border-radius: 10px;
 }
-
-tooltip label {
-  color: white;
-}
+tooltip label { color: @text; padding: 7px; }

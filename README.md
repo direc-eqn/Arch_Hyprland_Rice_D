@@ -1,128 +1,157 @@
-# 🏔️ Arch Hyprland Rice
+# Arch + Hyprland desktop
 
-A clean, modular, and performance-focused **Arch Linux + Hyprland** dotfiles setup built for productivity and aesthetic workflows.
+A compact teal-and-slate desktop with a readable Waybar, floating dialogs, and keyboard shortcuts you can discover from the bar. These are laptop dotfiles, with hardware-specific settings called out below.
 
-![OS](https://img.shields.io/badge/OS-Arch%20Linux-blue?logo=archlinux&logoColor=white)
-![WM](https://img.shields.io/badge/WM-Hyprland-blue?logo=hyprland&logoColor=white)
-![Shell](https://img.shields.io/badge/Shell-Zsh-green?logo=gnu-bash&logoColor=white)
-![Editor](https://img.shields.io/badge/Editor-Neovim-brightgreen?logo=neovim&logoColor=white)
+Tested with **Hyprland 0.56.2 (Lua)** and **Waybar 0.15.0**. This is not a configuration for older Hyprland releases that use `hyprland.conf`.
 
----
+## What to edit
 
-## 📸 Key Components Overview
+| File | Purpose |
+| --- | --- |
+| `hypr/hyprland.lua` | Preferences, monitors, startup, appearance, input, shortcuts, window rules; numbered sections in one file |
+| `hypr/local.lua` | Optional personal overrides, loaded last; ignored by Git |
+| `hypr/scripts/shortcuts.sh` | Searchable shortcut guide shown by Super + / |
+| `waybar/config.jsonc` | Module order, formats, hover drawers, click actions |
+| `waybar/style.css` | Color palette at the top, spacing and widget styling below |
+| `waybar/scripts/power-menu.sh` | Lock, Sleep, Shutdown and Reboot menu |
+| `waybar/expressvpn.sh` | Entry point for the VPN module |
+| `waybar/scripts/expressvpn.py` | VPN status and click actions, safe JSON encoding, timeouts |
+| `waybar/scripts/temperature.py` | CPU/GPU sensors discovered by driver and label |
+| `hypr/hypridle.conf` | Lock after 5 minutes, screen off after 5½, suspend after 10 |
+| `hypr/hyprlock.conf` / `hypr/hyprpaper.conf` | Lock screen / desktop wallpaper |
+| `hypr/hyprsunset.conf` | Optional night-light schedule; enable its startup explicitly |
+| `kitty/`, `zsh/`, `starship/`, `nvim/`, `yazi/` | Terminal, shell, prompt, editor and file manager |
+| `logind.conf.d/` | Optional system-wide lid policy; review before installing |
+| `Packages/` | Package snapshots, not a minimal dependency list |
+| `tests/` | VPN and temperature helper regression tests |
 
-| Component | Software / Tool | Description |
-| :--- | :--- | :--- |
-| **Window Manager** | [Hyprland](https://hyprland.org/) | Dynamic tiling Wayland compositor configured with Lua (`hyprland.lua`) |
-| **Status Bar** | [Waybar](https://github.com/Alexays/Waybar) | Top status bar with hardware monitors & custom ExpressVPN integration |
-| **Terminal** | [Kitty](https://sw.kovidgoyal.net/kitty/) | GPU-accelerated terminal with font ligatures & 80% opacity |
-| **Shell & Prompt** | [Zsh](https://www.zsh.org/) + [Starship](https://starship.rs/) | Fast shell setup with `zoxide`, `fzf` previews (`bat`/`eza`), & `yazi` integration |
-| **Text Editor** | [Neovim](https://neovim.io/) | Modular Lua configuration (`init.lua`) with native autocomplete & theme sync |
-| **File Manager** | [Yazi](https://yazi-rs.github.io/) | Modern terminal file manager with directory navigation wrapper |
-| **Lock & Idle** | Hyprlock / Hypridle / Hyprpaper / Hyprsunset | Screen locker, idle daemon, wallpaper daemon, & night light filter |
-| **System Rules** | Systemd Logind | Custom lid switch handling in `logind.conf.d/` |
+## Waybar controls
 
----
+The full-width bar is flush with the top edge, with rounded bottom corners, a centered clock and teal active-workspace accents. Hardware details and the volume slider expand on hover to keep the normal layout compact.
 
-## 📁 Repository Structure
+| Item | Action |
+| --- | --- |
+| Arch icon | Open the application launcher |
+| Workspace number | Switch workspace; teal marks the active workspace |
+| Clock | Click to switch between compact 24-hour and detailed 12-hour date/time; hover for calendar; scroll up over the clock for the previous month, down for the next |
+| CPU | Hover for RAM and CPU/GPU temperatures; click CPU or RAM to open Btop in Kitty |
+| VPN | Left-click to connect/disconnect; right-click to choose a region; hover for status and connected region |
+| Network | Click for NetworkManager connection settings; hover for signal quality |
+| Volume | Scroll to adjust; click for Pavucontrol; right-click to mute; hover to reveal the slider |
+| Battery | Hover for remaining time and power draw; amber below 25%, red below 10% while discharging |
+| Stay-awake icon | Toggle idle inhibition for presentations; teal means automatic idle lock/sleep is inhibited |
+| Tray | Existing network, Bluetooth and application menus |
+| Bell | Open notifications; right-click toggles do not disturb |
+| Question mark | Searchable keyboard shortcut guide |
+| Power | Open Lock / Sleep / Shutdown / Reboot; right-click locks immediately. Shutdown and Reboot ask for confirmation |
 
-```text
-.
-├── hypr/               # Hyprland setup (hyprland.lua, hyprlock, hyprpaper, hypridle, hyprsunset)
-├── waybar/             # Waybar bar config (config.jsonc, style.css, expressvpn.sh)
-├── kitty/              # Kitty terminal configuration (kitty.conf)
-├── nvim/               # Modular Neovim Lua setup (init.lua, lua/*.lua)
-├── yazi/               # Yazi file manager config (yazi.toml, keymap.toml)
-├── starship/           # Starship prompt theme (starship.toml)
-├── zsh/                # Zsh environment & aliases (.zshrc)
-├── logind.conf.d/      # Systemd logind rules (99-laptop-lid.conf)
-└── Packages/           # Exported official & AUR package lists
-    ├── pkglist-repo.txt
-    └── pkglist-aur.txt
+Sleep uses `systemctl suspend`; the existing Hypridle before-sleep handler locks the session. Escape dismisses the power menu without taking action.
+
+VPN status queries are read-only. Connecting and disconnecting happen only on clicks. The ExpressVPN GUI client or its background mode must be available for control commands. An unavailable client is shown explicitly rather than falsely reporting a disconnected VPN. Regions appear only in the tooltip, keeping the bar compact.
+
+Temperature readings use `coretemp` / AMD CPU sensors and labeled GPU sensors (including Dell's `GPU` sensor). Unsupported or unavailable sensors show a dash rather than a misleading zero. Red starts at 80°C. No NVIDIA polling process wakes a sleeping GPU just to populate the bar.
+
+## Keyboard shortcuts
+
+`Super` is the Windows / logo key. Existing bindings are retained, with fullscreen, notifications, audio keys and a help menu added.
+
+| Shortcut | Action |
+| --- | --- |
+| Super + R / Q / E | Applications / terminal / Yazi files |
+| Super + C | Close focused window |
+| Super + V | Toggle floating for any window |
+| Super + F | Toggle fullscreen |
+| Super + P / J | Pseudo tiling / change split direction |
+| Super + left / right mouse drag | Move / resize window |
+| Super + arrow keys | Move focus |
+| Super + 1…9, 0 | Workspaces 1…10 |
+| Super + Shift + 1…9, 0 | Move focused window to workspace |
+| Super + mouse wheel | Previous / next workspace |
+| Three-finger horizontal swipe | Switch workspace |
+| Super + Shift + S | Select a screenshot region |
+| Super + L | Lock screen |
+| Super + N / Shift + N | Notification center / do not disturb |
+| Super + Shift + R | Reload Hyprland and Waybar |
+| Super + / | Shortcut guide |
+| Super + M | Log out; ends the desktop session |
+| Volume / mute / microphone-mute keys | Control audio, including while locked |
+
+Modal dialogs, desktop file-chooser portals, and common file-picker titles float over the tiled layout. Browser pop-ups without dialog metadata may still need a specific window rule; use Super + V as a manual fallback.
+
+## Install or restore
+
+Back up existing files before copying. Run these commands from the repository root.
+
+Core packages for the desktop on Arch (package availability can vary):
+
+```sh
+sudo pacman -S --needed hyprland waybar kitty rofi yazi btop python \
+  hypridle hyprlock hyprpaper hyprshot hyprpolkitagent swaync \
+  networkmanager network-manager-applet blueman pavucontrol wireplumber \
+  ttf-jetbrains-mono-nerd
 ```
 
----
+Install and enable your audio stack, NetworkManager, Bluetooth and an appropriate `xdg-desktop-portal` backend separately if they are not already configured. `expressvpnctl` comes from the ExpressVPN client and is optional. `hyprsunset` is optional. Other terminal/editor configs have additional dependencies in the package snapshots.
 
-## 🚀 Installation & Restoration Guide
-
-Follow these steps to restore this configuration on a fresh Arch Linux installation.
-
-### Prerequisites
-
-Ensure `git`, `base-devel`, and an AUR helper (such as `yay`) are installed.
-
-### 1. Install Official & AUR Packages
-
-Restore all explicitly installed packages using the pre-compiled package lists:
-
-```bash
-# Official repository packages
-sudo pacman -S --needed - < Packages/pkglist-repo.txt
-
-# AUR packages (using yay)
-yay -S --needed - < Packages/pkglist-aur.txt
+```sh
+backup="$HOME/.local/state/dotfiles-backups/$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$backup" "$HOME/.config"
+for dir in hypr waybar; do
+  if [ -d "$HOME/.config/$dir" ]; then
+    cp -a "$HOME/.config/$dir" "$backup/"
+  fi
+  cp -a "$dir" "$HOME/.config/"
+done
+chmod +x "$HOME/.config/waybar/expressvpn.sh" "$HOME/.config/waybar/scripts/power-menu.sh" "$HOME/.config/hypr/scripts/shortcuts.sh"
+Hyprland --verify-config -c "$HOME/.config/hypr/hyprland.lua"
+hyprctl reload
+pkill -USR2 -x waybar
 ```
 
-### 2. Deploy Configuration Files
+If Waybar is not running, start it with `waybar`. Startup apps only launch when the Hyprland session starts; reloading does not start missing daemons. The supplied bar commands assume configs are installed under `~/.config`.
 
-Copy or symlink configuration directories to their target system paths:
+Copy `kitty`, `nvim`, `yazi`, and `starship` to `~/.config` only if you want those configurations too. Back up `~/.zshrc` before replacing it with `zsh/.zshrc`.
 
-```bash
-# User configurations (~/.config)
-mkdir -p ~/.config
-cp -r hypr waybar kitty nvim yazi starship ~/.config/
+### Hardware settings to review
 
-# Zsh configuration
-cp zsh/.zshrc ~/.zshrc
+- **Display:** `eDP-1`, scale `1.2`, near the top of `hyprland.lua`. Use `hyprctl monitors` to find your names. Closing the lid disables the panel only when another monitor is active; reopening enables it.
+- **Lid policy:** the optional logind override ignores lid events system-wide. With it installed, closing the lid on the laptop alone does **not** immediately suspend; the configured idle timers still apply. Do not install it if you prefer systemd's default lid suspend behavior.
+- **NVIDIA:** the two explicitly marked NVIDIA environment variables are preserved for this laptop. Remove them on systems without NVIDIA.
+- **Wallpaper:** provide `~/Pictures/Wallpapers/wallpaper.jpeg`, or edit the two wallpaper paths. Images are not bundled.
+- **Screenshots:** saved to `~/Pictures/Screenshots`.
+- **Night light:** add `hyprsunset` to the autostart list to use its existing schedule.
+- **Brightness:** brightness controls are not bound because `brightnessctl` is not installed in the tested setup.
 
-# Systemd logind overrides (handles laptop lid behavior)
-sudo mkdir -p /etc/systemd/logind.conf.d/
-sudo cp logind.conf.d/99-laptop-lid.conf /etc/systemd/logind.conf.d/
+## Validate and troubleshoot
+
+```sh
+Hyprland --verify-config -c "$PWD/hypr/hyprland.lua"
+python3 -m unittest discover -s tests -v
+sh -n waybar/expressvpn.sh
+sh -n waybar/scripts/power-menu.sh
+sh -n hypr/scripts/shortcuts.sh
+hyprctl configerrors
 ```
 
-> [!NOTE]
-> Symlinking (`ln -s`) instead of copying allows you to easily track live changes using git.
+For Waybar diagnostics, stop the existing instance and run `waybar -l debug` from a terminal. Check for missing commands or modules. Hover CPU / volume to check their expanded layouts. VPN tests use mocks and do not change your connection. Power, logout, lock and suspend actions should be checked manually when convenient.
 
----
+Rollback: copy the backed-up `hypr` and `waybar` contents into `~/.config`, reload Hyprland, then restart Waybar. Newly introduced helpers are inert if the restored config does not reference them. Keep backups outside the repository.
 
-## ⚙️ Feature Highlights
+## Privacy and maintenance
 
-### 🪟 Hyprland (Lua Config)
-- Configured using native Lua (`hyprland.lua`) for dynamic logic and cleaner organization.
-- Automatic lid-switch detection (`eDP-1` display disable/enable on laptop close/open).
-- Autostart orchestration for status bars (`waybar`), wallpapers (`hyprpaper`), notifications (`swaync`), idle daemons (`hypridle`), and network/bluetooth applets.
+No credentials are required in these files. Keep VPN activation files, API tokens, SSH private keys and `.env` files outside the repository. `.gitignore` excludes common credential files, `local.lua`, backups, logs and Python caches; it cannot remove files already committed.
 
-### 📊 Custom Waybar
-- **Hardware Sensors**: Displays CPU and GPU temperatures via system `hwmon` interfaces, plus CPU & RAM load with interactive click handlers targeting `btop`/`htop`.
-- **ExpressVPN Integration**: Custom script (`expressvpn.sh`) showing connection status with left-click toggle and right-click region selection.
-- **Audio & Power**: PulseAudio volume slider and battery status with dynamic icon updates.
+The September 2026 refresh checked tracked files and reachable Git history for common credential/token patterns and found no matches. Personal absolute home paths were replaced in the current configs, and an accidentally tracked Hyprland backup was removed. Older commits still contain the previous paths and backup; history was not rewritten. Pattern scanning is not a guarantee that arbitrary secrets cannot be present. Review `git diff --cached` before publishing.
 
-### 🐚 Zsh + FZF + Zoxide
-- Interactive file and directory search with `fzf` using `bat` line previews and `eza` tree previews.
-- Smart navigation with `zoxide` (`cd` aliased to `z`).
-- Seamless `yazi` integration: exiting `yazi` automatically updates the shell's active working directory.
+Refresh package snapshots if desired:
 
-### 📝 Neovim Setup
-- Written in clean Lua (`init.lua` importing modular components in `lua/`).
-- Native autocomplete enabled (`vim.o.autocomplete = true`).
-- Automatic transparent background sync matching Kitty terminal's `0.80` opacity.
-
----
-
-## 📦 Maintenance & Exporting Package Lists
-
-If you make changes to your installed packages, update the repository package lists before committing:
-
-```bash
-# Official packages
-pacman -Qeq > Packages/pkglist-repo.txt
-
-# AUR / foreign packages
-pacman -Qmq > Packages/pkglist-aur.txt
+```sh
+pacman -Qqen > Packages/pkglist-repo.txt
+pacman -Qqem > Packages/pkglist-aur.txt
 ```
 
----
+Reference: [Hyprland configuration](https://wiki.hypr.land/Configuring/Start/) and [Waybar documentation](https://github.com/Alexays/Waybar/wiki).
 
-## 📄 License
+## License
 
-Distributed under the [MIT License](LICENSE).
+See [LICENSE](LICENSE): GNU General Public License, version 3. The previous README's MIT label was incorrect; the license file itself is unchanged.
