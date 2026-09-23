@@ -9,6 +9,7 @@ Tested with **Hyprland 0.56.2 (Lua)** and **Waybar 0.15.0**. This is not a confi
 | File | Purpose |
 | --- | --- |
 | `hypr/hyprland.lua` | Preferences, monitors, startup, appearance, input, shortcuts, window rules; numbered sections in one file |
+| `hypr/browser-dialogs.lua` | Float Google sign-in popups after Chromium assigns their title |
 | `hypr/local.lua` | Optional personal overrides, loaded last; ignored by Git |
 | `hypr/scripts/shortcuts.sh` | Searchable shortcut guide shown by Super + / |
 | `waybar/config.jsonc` | Module order, formats, hover drawers, click actions |
@@ -76,7 +77,15 @@ Temperature readings use `coretemp` / AMD CPU sensors and labeled GPU sensors (i
 | Super + M | Log out; ends the desktop session |
 | Volume / mute / microphone-mute keys | Control audio, including while locked |
 
-Modal dialogs, desktop file-chooser portals, and common file-picker titles float over the tiled layout. Browser pop-ups without dialog metadata may still need a specific window rule; use Super + V as a manual fallback.
+Modal dialogs, desktop file-chooser portals, and common file-picker titles float over the tiled layout. Chromium / Chrome Google sign-in popups that start with an empty or Untitled title are handled when their title changes, even when the browser omits dialog metadata. They open centered at up to 560 × 680 logical pixels and can be moved/resized normally. Regular browser windows stay tiled. Other providers or translated titles may need another targeted match; Super + V remains a manual fallback.
+
+## Notification pop-ups
+
+SwayNC starts with the Hyprland session. Its default notification window uses the overlay layer, so desktop banners appear on the currently visible workspace rather than belonging to the sender's workspace. Verified with a normal-priority banner across workspaces 3, 1 and 2.
+
+Use Super + N or the bell for notification history. Right-clicking the bell or Super + Shift + N toggles Do Not Disturb, which suppresses normal banners. Check `swaync-client -D` and `swaync-client -I`; both should print `false` when banners are wanted. Apps and browser websites must also allow notifications in their own settings.
+
+Test from a desktop terminal with `notify-send "Notification test" "This should appear on the current workspace"`.
 
 ## Install or restore
 
@@ -127,6 +136,7 @@ Copy `kitty`, `nvim`, `yazi`, and `starship` to `~/.config` only if you want tho
 ```sh
 Hyprland --verify-config -c "$PWD/hypr/hyprland.lua"
 python3 -m unittest discover -s tests -v
+lua tests/test_browser_dialogs.lua
 sh -n waybar/expressvpn.sh
 sh -n waybar/scripts/power-menu.sh
 sh -n hypr/scripts/shortcuts.sh

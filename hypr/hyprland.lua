@@ -148,6 +148,9 @@ hl.window_rule({
 })
 hl.window_rule({ name = "move-hyprland-run", match = { class = "hyprland-run" }, move = "20 monitor_h-120", float = true })
 
+-- Browser login popups whose titles arrive after the window opens.
+dofile(configHome .. "/hypr/browser-dialogs.lua")
+
 -- 7. Optional machine-specific overrides --------------------------------------
 local localPath = configHome .. "/hypr/local.lua"
 local localFile = io.open(localPath, "r")
