@@ -30,7 +30,6 @@ intel-ucode
 kitty
 lazygit
 less
-lib32-nvidia-580xx-utils
 linux
 linux-firmware
 linux-headers
@@ -42,8 +41,6 @@ networkmanager
 noto-fonts
 noto-fonts-cjk
 noto-fonts-emoji
-nvidia-580xx-dkms
-nvidia-580xx-utils
 nvidia-prime
 nvidia-settings
 nvtop
@@ -73,8 +70,6 @@ ufw
 waybar
 xdg-desktop-portal-hyprland
 xterm
-yay
-yay-debug
 yazi
 zoxide
 zsh

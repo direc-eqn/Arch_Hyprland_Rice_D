@@ -1,4 +1,5 @@
 lib32-nvidia-580xx-utils
+minecraft-launcher
 nvidia-580xx-dkms
 nvidia-580xx-utils
 yay
