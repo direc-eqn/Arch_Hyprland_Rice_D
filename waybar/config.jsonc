@@ -1,5 +1,4 @@
-// Layout and click actions. Colors and spacing live in style.css.
-// Hover CPU for hardware details; hover volume for its slider.
+// Layout and click actions. Build the hover mixer with mixer/build.sh.
 {
   "layer": "top",
   "position": "top",
@@ -22,7 +21,7 @@
     "group/hardware",
     "custom/expressvpn",
     "network",
-    "group/volume",
+    "cffi/audio-mixer",
     "battery",
     "idle_inhibitor",
     "tray",
@@ -115,41 +114,6 @@
     "tooltip-format-disconnected": "Network disconnected\nClick: connection settings",
     "on-click": "nm-connection-editor"
   },
-  "group/volume": {
-    "orientation": "horizontal",
-    "drawer": {
-      "transition-duration": 180,
-      "children-class": "volume-detail"
-    },
-    "modules": [
-      "pulseaudio",
-      "pulseaudio/slider"
-    ]
-  },
-  "pulseaudio": {
-    "format": "{icon} {volume}%",
-    "format-muted": "󰝟 Muted",
-    "format-icons": {
-      "default": [
-        "",
-        "",
-        ""
-      ]
-    },
-    "scroll-step": 2,
-    "max-volume": 100,
-    "ignored-sinks": [
-      "Easy Effects Sink"
-    ],
-    "tooltip-format": "Volume: {volume}%\nScroll: adjust · click: sound settings\nRight-click: mute · hover: slider",
-    "on-click": "pavucontrol",
-    "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
-  },
-  "pulseaudio/slider": {
-    "min": 0,
-    "max": 100,
-    "orientation": "horizontal"
-  },
   "battery": {
     "bat": "BAT0",
     "adapter": "AC",
@@ -213,5 +177,12 @@
     "tooltip-format": "Power menu: Lock · Sleep · Shutdown · Reboot\nRight-click: lock screen",
     "on-click": "\"$HOME/.config/waybar/scripts/power-menu.sh\"",
     "on-click-right": "pidof hyprlock || hyprlock"
-  }
+  },
+  // Maximum for both master and per-app sliders (100–200%).
+  "cffi/audio-mixer": {
+    "max-volume": 150
+  },
+  "include": [
+    "~/.config/waybar/mixer/module.local.json"
+  ]
 }

@@ -74,25 +74,36 @@ window#waybar {
 #custom-notifications:hover, #custom-help:hover, #custom-power:hover {
     background: @hover;
 }
-/* Hover volume to reveal the slider. */
-#pulseaudio-slider { margin: 0 10px 0 3px; }
-#pulseaudio-slider trough {
-    min-width: 70px;
-    min-height: 5px;
-    border-radius: 5px;
-    background: @border;
-}
-#pulseaudio-slider highlight { border-radius: 5px; background: @accent; }
-#pulseaudio-slider slider {
-    min-width: 9px;
-    min-height: 9px;
-    border-radius: 50%;
-    background: @text;
-    box-shadow: none;
-}
 tooltip {
     background: @base;
     border: 1px solid @border;
     border-radius: 10px;
 }
 tooltip label { color: @text; padding: 7px; }
+
+/* Native hover mixer: master volume plus each application's playback stream. */
+#audio-mixer {
+    color: @text;
+    padding: 0 9px;
+    margin: 4px 0;
+    border-radius: 8px;
+}
+#audio-mixer:hover { background: @hover; }
+#audio-mixer-popup {
+    background: @base;
+    color: @text;
+    border: 1px solid @border;
+    border-radius: 12px;
+}
+#audio-mixer-popup .mixer-heading { color: @accent; font-size: 14px; font-weight: bold; }
+#audio-mixer-popup .mixer-row { padding: 4px 0; }
+#audio-mixer-popup button { background: @surface; color: @accent; padding: 5px 8px; border-radius: 6px; }
+#audio-mixer-popup button:hover { background: @hover; }
+#audio-mixer-popup scale { padding: 7px 0; }
+#audio-mixer-popup scale trough { min-height: 5px; border-radius: 5px; background: @border; }
+#audio-mixer-popup scale highlight { background: @accent; border-radius: 5px; }
+#audio-mixer-popup scale slider { min-width: 12px; min-height: 12px; border-radius: 50%; background: @text; }
+#audio-mixer-popup separator { background: @border; min-height: 1px; }
+
+#audio-mixer-popup .mixer-media-heading { color: @accent; font-size: 11px; }
+#audio-mixer-popup .boost { color: @accent; font-weight: bold; }

@@ -14,6 +14,7 @@ Tested with **Hyprland 0.56.2 (Lua)** and **Waybar 0.15.0**. This is not a confi
 | `hypr/scripts/shortcuts.sh` | Searchable shortcut guide shown by Super + / |
 | `waybar/config.jsonc` | Module order, formats, hover drawers, click actions |
 | `waybar/style.css` | Color palette at the top, spacing and widget styling below |
+| `waybar/mixer/` | Native hover mixer: source, build script and isolated audio tests |
 | `waybar/scripts/power-menu.sh` | Lock, Sleep, Shutdown and Reboot menu |
 | `waybar/expressvpn.sh` | Entry point for the VPN module |
 | `waybar/scripts/expressvpn.py` | VPN status and click actions, safe JSON encoding, timeouts |
@@ -28,7 +29,7 @@ Tested with **Hyprland 0.56.2 (Lua)** and **Waybar 0.15.0**. This is not a confi
 
 ## 🎛️ Waybar controls
 
-The full-width bar is flush with the top edge, with rounded bottom corners, a centered clock and teal active-workspace accents. Hardware details and the volume slider expand on hover to keep the normal layout compact.
+The full-width bar is flush with the top edge, with rounded bottom corners, a centered clock and teal active-workspace accents. Hardware details expand on hover. Hovering over volume opens a mixer below the bar with master and per-stream sliders.
 
 | Item | Action |
 | --- | --- |
@@ -38,7 +39,7 @@ The full-width bar is flush with the top edge, with rounded bottom corners, a ce
 | ⚙️ CPU | Hover for RAM and CPU/GPU temperatures; click CPU or RAM to open Btop in Kitty |
 | 🛡️ VPN | Left-click to connect/disconnect; right-click to choose a region; hover for status and connected region |
 | 🌐 Network | Click for NetworkManager connection settings; hover for signal quality |
-| 🔊 Volume | Scroll to adjust; click for Pavucontrol; right-click to mute; hover to reveal the slider |
+| 🔊 Volume | Hover or click for the master/app mixer; drag each slider to adjust that stream, or use its mute button. Scroll over the bar icon adjusts master volume; right-click mutes the output |
 | 🔋 Battery | Hover for remaining time and power draw; amber below 25%, red below 10% while discharging |
 | ☕ Stay-awake icon | Toggle idle inhibition for presentations; teal means automatic idle lock/sleep is inhibited |
 | 🧩 Tray | Existing network, Bluetooth and application menus |
@@ -97,7 +98,7 @@ Core packages for the desktop on Arch (package availability can vary):
 sudo pacman -S --needed hyprland waybar kitty rofi yazi btop python \
   hypridle hyprlock hyprpaper hyprshot hyprpolkitagent swaync \
   networkmanager network-manager-applet blueman pavucontrol wireplumber \
-  ttf-jetbrains-mono-nerd
+  ttf-jetbrains-mono-nerd gcc pkgconf gtk3 gtk-layer-shell libpulse playerctl
 ```
 
 Install and enable your audio stack, NetworkManager, Bluetooth and an appropriate `xdg-desktop-portal` backend separately if they are not already configured. `expressvpnctl` comes from the ExpressVPN client and is optional. `hyprsunset` is optional. Other terminal/editor configs have additional dependencies in the package snapshots.
@@ -112,9 +113,11 @@ for dir in hypr waybar; do
   cp -a "$dir" "$HOME/.config/"
 done
 chmod +x "$HOME/.config/waybar/expressvpn.sh" "$HOME/.config/waybar/scripts/power-menu.sh" "$HOME/.config/hypr/scripts/shortcuts.sh"
+"$HOME/.config/waybar/mixer/build.sh"
 Hyprland --verify-config -c "$HOME/.config/hypr/hyprland.lua"
 hyprctl reload
-pkill -USR2 -x waybar
+pkill -x waybar
+waybar > "$HOME/.local/state/waybar.log" 2>&1 &
 ```
 
 If Waybar is not running, start it with `waybar`. Startup apps only launch when the Hyprland session starts; reloading does not start missing daemons. The supplied bar commands assume configs are installed under `~/.config`.
@@ -143,7 +146,7 @@ sh -n hypr/scripts/shortcuts.sh
 hyprctl configerrors
 ```
 
-For Waybar diagnostics, stop the existing instance and run `waybar -l debug` from a terminal. Check for missing commands or modules. Hover CPU / volume to check their expanded layouts. VPN tests use mocks and do not change your connection. Power, logout, lock and suspend actions should be checked manually when convenient.
+For Waybar diagnostics, stop the existing instance and run `waybar -l debug` from a terminal. Check for missing commands or modules. Hover CPU / volume to check their expanded layouts. Run `python3 waybar/mixer/test-mixer.py` inside your desktop session to test the mixer with a disposable silent stream; it temporarily opens a test popup without modifying other apps' volumes. VPN tests use mocks and do not change your connection. Power, logout, lock and suspend actions should be checked manually when convenient.
 
 Rollback: copy the backed-up `hypr` and `waybar` contents into `~/.config`, reload Hyprland, then restart Waybar. Newly introduced helpers are inert if the restored config does not reference them. Keep backups outside the repository.
 
@@ -171,3 +174,19 @@ See [LICENSE](LICENSE): GNU General Public License, version 3. The previous READ
 Waybar 0.15.0 crashed in `Battery::refreshBatteries()` while attempting to watch a disappearing Logitech `hidpp_battery_*` device. The battery module now explicitly selects `BAT0` and adapter `AC`, avoiding peripheral battery discovery. On another machine, check `/sys/class/power_supply/` and adjust these two names in `waybar/config.jsonc`.
 
 Hyprland's autostart writes Waybar output to `~/.local/state/waybar.log` (replaced at the next session start). Inspect this log and `coredumpctl list waybar` if the bar exits again. This change addresses the observed battery-watch failure, not every possible Waybar crash.
+
+### 🎚️ Hover audio mixer
+
+Hover over the volume icon for about 0.2 seconds to open the mixer. Move onto it to adjust master volume or any active playback stream. Move away to close it. The popup is attached to the actual bar widget, so there are no hard-coded mouse coordinates or cursor polling. Audio updates use PulseAudio subscriptions (also supported by PipeWire-Pulse).
+
+Browsers may expose multiple playback streams; each gets a slider. If a browser combines tabs into one stream, those tabs share its volume. Apps without a current playback stream will not appear. Master and app sliders, plus scrolling over the volume icon, support 0–150%. The slider tick marks 100%; boosted percentages are highlighted. Change `cffi/audio-mixer.max-volume` in `waybar/config.jsonc` to a value from 100 to 200. Amplification can distort loud audio. Microphone volume is not changed by this mixer.
+
+The **Now playing** section shows tab/media titles supplied through MPRIS (using `playerctl`), and updates when the media changes. Stream labels use `media.title` or `media.name` when available. Chromium currently supplies only “Playback” for its audio streams, so these are labelled with a stream number; its player-wide media title is displayed separately. Chromium does not expose a reliable tab-to-stream mapping, and tabs without media-session metadata cannot be named by this mixer. Media titles are read in memory and are not saved to the repository or a log.
+
+The module uses Waybar's CFFI v2 interface and GTK3/GTK Layer Shell. Build after copying the configs, and rebuild after incompatible library or Waybar upgrades:
+
+```sh
+~/.config/waybar/mixer/build.sh
+```
+
+`build.sh` generates `audio-mixer.so` and `module.local.json` in that directory. The JSON contains the absolute library path required by Waybar; both generated files are ignored by Git. Only source and tests are tracked. Restart Waybar after rebuilding (a full restart loads the new library). No root access or package rebuild is needed. If you need device-routing settings, run `pavucontrol` from the application launcher.
