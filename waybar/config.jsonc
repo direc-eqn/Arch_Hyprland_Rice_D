@@ -151,6 +151,8 @@
     "orientation": "horizontal"
   },
   "battery": {
+    "bat": "BAT0",
+    "adapter": "AC",
     "interval": 30,
     "states": {
       "warning": 25,

@@ -44,9 +44,11 @@ hl.env("HYPRSHOT_DIR", home .. "/Pictures/Screenshots")
 hl.on("hyprland.start", function()
     hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP")
     hl.exec_cmd("systemctl --user start hyprpolkitagent")
-    for _, program in ipairs({ "blueman-applet", "nm-applet", "hyprpaper", "swaync", "hypridle", "waybar" }) do
+    for _, program in ipairs({ "blueman-applet", "nm-applet", "hyprpaper", "swaync", "hypridle" }) do
         hl.exec_cmd("command -v " .. program .. " >/dev/null 2>&1 && " .. program)
     end
+    -- Preserve the most recent session's bar log for crash diagnosis.
+    hl.exec_cmd('mkdir -p "$HOME/.local/state" && exec waybar > "$HOME/.local/state/waybar.log" 2>&1')
     -- To enable the schedule in hyprsunset.conf, add "hyprsunset" to the list above.
     local handle = io.popen("cat /proc/acpi/button/lid/*/state 2>/dev/null")
     if handle then

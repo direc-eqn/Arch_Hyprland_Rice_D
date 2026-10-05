@@ -1,10 +1,10 @@
-# Arch + Hyprland desktop
+# 🏔️ Arch + Hyprland desktop
 
 A compact teal-and-slate desktop with a readable Waybar, floating dialogs, and keyboard shortcuts you can discover from the bar. These are laptop dotfiles, with hardware-specific settings called out below.
 
 Tested with **Hyprland 0.56.2 (Lua)** and **Waybar 0.15.0**. This is not a configuration for older Hyprland releases that use `hyprland.conf`.
 
-## What to edit
+## 🗂️ What to edit
 
 | File | Purpose |
 | --- | --- |
@@ -26,25 +26,25 @@ Tested with **Hyprland 0.56.2 (Lua)** and **Waybar 0.15.0**. This is not a confi
 | `Packages/` | Package snapshots, not a minimal dependency list |
 | `tests/` | VPN and temperature helper regression tests |
 
-## Waybar controls
+## 🎛️ Waybar controls
 
 The full-width bar is flush with the top edge, with rounded bottom corners, a centered clock and teal active-workspace accents. Hardware details and the volume slider expand on hover to keep the normal layout compact.
 
 | Item | Action |
 | --- | --- |
-| Arch icon | Open the application launcher |
-| Workspace number | Switch workspace; teal marks the active workspace |
-| Clock | Click to switch between compact 24-hour and detailed 12-hour date/time; hover for calendar; scroll up over the clock for the previous month, down for the next |
-| CPU | Hover for RAM and CPU/GPU temperatures; click CPU or RAM to open Btop in Kitty |
-| VPN | Left-click to connect/disconnect; right-click to choose a region; hover for status and connected region |
-| Network | Click for NetworkManager connection settings; hover for signal quality |
-| Volume | Scroll to adjust; click for Pavucontrol; right-click to mute; hover to reveal the slider |
-| Battery | Hover for remaining time and power draw; amber below 25%, red below 10% while discharging |
-| Stay-awake icon | Toggle idle inhibition for presentations; teal means automatic idle lock/sleep is inhibited |
-| Tray | Existing network, Bluetooth and application menus |
-| Bell | Open notifications; right-click toggles do not disturb |
-| Question mark | Searchable keyboard shortcut guide |
-| Power | Open Lock / Sleep / Shutdown / Reboot; right-click locks immediately. Shutdown and Reboot ask for confirmation |
+| 🚀 Arch icon | Open the application launcher |
+| 🖥️ Workspace number | Switch workspace; teal marks the active workspace |
+| 📅 Clock | Click to switch between compact 24-hour and detailed 12-hour date/time; hover for calendar; scroll up over the clock for the previous month, down for the next |
+| ⚙️ CPU | Hover for RAM and CPU/GPU temperatures; click CPU or RAM to open Btop in Kitty |
+| 🛡️ VPN | Left-click to connect/disconnect; right-click to choose a region; hover for status and connected region |
+| 🌐 Network | Click for NetworkManager connection settings; hover for signal quality |
+| 🔊 Volume | Scroll to adjust; click for Pavucontrol; right-click to mute; hover to reveal the slider |
+| 🔋 Battery | Hover for remaining time and power draw; amber below 25%, red below 10% while discharging |
+| ☕ Stay-awake icon | Toggle idle inhibition for presentations; teal means automatic idle lock/sleep is inhibited |
+| 🧩 Tray | Existing network, Bluetooth and application menus |
+| 🔔 Bell | Open notifications; right-click toggles do not disturb |
+| ❓ Question mark | Searchable keyboard shortcut guide |
+| ⏻ Power | Open Lock / Sleep / Shutdown / Reboot; right-click locks immediately. Shutdown and Reboot ask for confirmation |
 
 Sleep uses `systemctl suspend`; the existing Hypridle before-sleep handler locks the session. Escape dismisses the power menu without taking action.
 
@@ -52,7 +52,7 @@ VPN status queries are read-only. Connecting and disconnecting happen only on cl
 
 Temperature readings use `coretemp` / AMD CPU sensors and labeled GPU sensors (including Dell's `GPU` sensor). Unsupported or unavailable sensors show a dash rather than a misleading zero. Red starts at 80°C. No NVIDIA polling process wakes a sleeping GPU just to populate the bar.
 
-## Keyboard shortcuts
+## ⌨️ Keyboard shortcuts
 
 `Super` is the Windows / logo key. Existing bindings are retained, with fullscreen, notifications, audio keys and a help menu added.
 
@@ -79,7 +79,7 @@ Temperature readings use `coretemp` / AMD CPU sensors and labeled GPU sensors (i
 
 Modal dialogs, desktop file-chooser portals, and common file-picker titles float over the tiled layout. Chromium / Chrome Google sign-in popups that start with an empty or Untitled title are handled when their title changes, even when the browser omits dialog metadata. They open centered at up to 560 × 680 logical pixels and can be moved/resized normally. Regular browser windows stay tiled. Other providers or translated titles may need another targeted match; Super + V remains a manual fallback.
 
-## Notification pop-ups
+## 🔔 Notification pop-ups
 
 SwayNC starts with the Hyprland session. Its default notification window uses the overlay layer, so desktop banners appear on the currently visible workspace rather than belonging to the sender's workspace. Verified with a normal-priority banner across workspaces 3, 1 and 2.
 
@@ -87,7 +87,7 @@ Use Super + N or the bell for notification history. Right-clicking the bell or S
 
 Test from a desktop terminal with `notify-send "Notification test" "This should appear on the current workspace"`.
 
-## Install or restore
+## 📦 Install or restore
 
 Back up existing files before copying. Run these commands from the repository root.
 
@@ -121,7 +121,7 @@ If Waybar is not running, start it with `waybar`. Startup apps only launch when 
 
 Copy `kitty`, `nvim`, `yazi`, and `starship` to `~/.config` only if you want those configurations too. Back up `~/.zshrc` before replacing it with `zsh/.zshrc`.
 
-### Hardware settings to review
+### 🖥️ Hardware settings to review
 
 - **Display:** `eDP-1`, scale `1.2`, near the top of `hyprland.lua`. Use `hyprctl monitors` to find your names. Closing the lid disables the panel only when another monitor is active; reopening enables it.
 - **Lid policy:** the optional logind override ignores lid events system-wide. With it installed, closing the lid on the laptop alone does **not** immediately suspend; the configured idle timers still apply. Do not install it if you prefer systemd's default lid suspend behavior.
@@ -131,7 +131,7 @@ Copy `kitty`, `nvim`, `yazi`, and `starship` to `~/.config` only if you want tho
 - **Night light:** add `hyprsunset` to the autostart list to use its existing schedule.
 - **Brightness:** brightness controls are not bound because `brightnessctl` is not installed in the tested setup.
 
-## Validate and troubleshoot
+## 🛠️ Validate and troubleshoot
 
 ```sh
 Hyprland --verify-config -c "$PWD/hypr/hyprland.lua"
@@ -147,7 +147,7 @@ For Waybar diagnostics, stop the existing instance and run `waybar -l debug` fro
 
 Rollback: copy the backed-up `hypr` and `waybar` contents into `~/.config`, reload Hyprland, then restart Waybar. Newly introduced helpers are inert if the restored config does not reference them. Keep backups outside the repository.
 
-## Privacy and maintenance
+## 🔐 Privacy and maintenance
 
 No credentials are required in these files. Keep VPN activation files, API tokens, SSH private keys and `.env` files outside the repository. `.gitignore` excludes common credential files, `local.lua`, backups, logs and Python caches; it cannot remove files already committed.
 
@@ -162,6 +162,12 @@ pacman -Qqem > Packages/pkglist-aur.txt
 
 Reference: [Hyprland configuration](https://wiki.hypr.land/Configuring/Start/) and [Waybar documentation](https://github.com/Alexays/Waybar/wiki).
 
-## License
+## 📄 License
 
 See [LICENSE](LICENSE): GNU General Public License, version 3. The previous README's MIT label was incorrect; the license file itself is unchanged.
+
+### 🔋 Battery crash workaround (October 2026)
+
+Waybar 0.15.0 crashed in `Battery::refreshBatteries()` while attempting to watch a disappearing Logitech `hidpp_battery_*` device. The battery module now explicitly selects `BAT0` and adapter `AC`, avoiding peripheral battery discovery. On another machine, check `/sys/class/power_supply/` and adjust these two names in `waybar/config.jsonc`.
+
+Hyprland's autostart writes Waybar output to `~/.local/state/waybar.log` (replaced at the next session start). Inspect this log and `coredumpctl list waybar` if the bar exits again. This change addresses the observed battery-watch failure, not every possible Waybar crash.
