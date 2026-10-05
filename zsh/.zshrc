@@ -1,4 +1,5 @@
-# Created by newuser for 5.9.1
+# Interactive shell: ~/.zshrc. Configs are installed by restore.py.
+export PATH="$HOME/.local/bin:$PATH"
 unsetopt PROMPT_SP
 
 autoload -Uz compinit promptinit
@@ -53,9 +54,9 @@ _fzf_comprun() {
 
     case "$command" in 
         cd)             fzf --preview 'eza --tree --color=always {} | head -200'                    "$@" ;;
-        export|unset)   fzf --preview "eval 'eza 'echo \$' {}"                                      "$@" ;;
-        ssh)            fzf --preview 'dig {}'                                                      "$@" ;;
-        *)              fzf --preview "--preview 'bat -n --color=always ==ling-range :500 {}'"      "$@" ;;
+        export|unset)   fzf --preview 'printenv {}'                                      "$@" ;;
+        ssh)            fzf --preview 'getent hosts {}'                                                      "$@" ;;
+        *)              fzf --preview 'bat -n --color=always --line-range :500 {}'      "$@" ;;
     esac
 }
 

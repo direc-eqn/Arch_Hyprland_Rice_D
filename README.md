@@ -1,8 +1,17 @@
 # 🏔️ Arch + Hyprland desktop
 
-A compact teal-and-slate desktop with a readable Waybar, floating dialogs, and keyboard shortcuts you can discover from the bar. These are laptop dotfiles, with hardware-specific settings called out below.
+![OS](https://img.shields.io/badge/OS-Arch_Linux-1793d1?style=flat-square)
+![Hyprland](https://img.shields.io/badge/Hyprland-0.56%2B_%28Lua%29-00b5b5?style=flat-square)
+![Waybar](https://img.shields.io/badge/Waybar-CFFI_v2-9b59b6?style=flat-square)
+![Audio](https://img.shields.io/badge/Audio-PipeWire_%2F_PulseAudio-e67e22?style=flat-square)
+![Restore](https://img.shields.io/badge/Restore-Backups_%2B_Rollback-4cbb17?style=flat-square)
+![Preview](https://img.shields.io/badge/Preview-Dry_Run-0088cc?style=flat-square)
+![Machine settings](https://img.shields.io/badge/Machine_Settings-Local_%26_Ignored-4cbb17?style=flat-square)
 
-Tested with **Hyprland 0.56.2 (Lua)** and **Waybar 0.15.0**. This is not a configuration for older Hyprland releases that use `hyprland.conf`.
+
+A compact teal-and-slate desktop with a readable Waybar, floating dialogs, and keyboard shortcuts you can discover from the bar. A restore script detects laptop/desktop hardware, backs up existing files, and keeps machine preferences outside Git.
+
+Tested with **Hyprland 0.56.2 (Lua)**, **Waybar 0.15.0**, and **Neovim 0.12.5**. This is not a configuration for older Hyprland releases that use `hyprland.conf`.
 
 ## 🗂️ What to edit
 
@@ -10,6 +19,9 @@ Tested with **Hyprland 0.56.2 (Lua)** and **Waybar 0.15.0**. This is not a confi
 | --- | --- |
 | `hypr/hyprland.lua` | Preferences, monitors, startup, appearance, input, shortcuts, window rules; numbered sections in one file |
 | `hypr/browser-dialogs.lua` | Float Google sign-in popups after Chromium assigns their title |
+| `restore.py` | Preview, back up, restore, build and roll back the desktop |
+| `docs/INSTALL.md` | Fresh Arch preparation, package/service setup and first login |
+| `hypr/machine.example.lua` | Portable display, NVIDIA and night-light preferences; restore generates ignored `machine.lua` |
 | `hypr/local.lua` | Optional personal overrides, loaded last; ignored by Git |
 | `hypr/scripts/shortcuts.sh` | Searchable shortcut guide shown by Super + / |
 | `waybar/config.jsonc` | Module order, formats, hover drawers, click actions |
@@ -24,8 +36,11 @@ Tested with **Hyprland 0.56.2 (Lua)** and **Waybar 0.15.0**. This is not a confi
 | `hypr/hyprsunset.conf` | Optional night-light schedule; enable its startup explicitly |
 | `kitty/`, `zsh/`, `starship/`, `nvim/`, `yazi/` | Terminal, shell, prompt, editor and file manager |
 | `logind.conf.d/` | Optional system-wide lid policy; review before installing |
-| `Packages/` | Package snapshots, not a minimal dependency list |
-| `tests/` | VPN and temperature helper regression tests |
+| `gtk-3.0/`, `gtk-4.0/`, `qt6ct/` | GTK and Qt appearance settings |
+| `tmux/`, `btop/`, `xsettingsd/` | Terminal tools and optional XSettings preferences |
+| `wallpapers/` | Current desktop and lock-screen wallpaper |
+| `Packages/` | Portable rice list, optional apps, Yazi tool reference, hardware notes and original snapshots |
+| `tests/` | Restore/rollback, VPN, temperature and browser-dialog regression checks |
 
 ## 🎛️ Waybar controls
 
@@ -90,49 +105,53 @@ Test from a desktop terminal with `notify-send "Notification test" "This should 
 
 ## 📦 Install or restore
 
-Back up existing files before copying. Run these commands from the repository root.
-
-Core packages for the desktop on Arch (package availability can vary):
-
-```sh
-sudo pacman -S --needed hyprland waybar kitty rofi yazi btop python \
-  hypridle hyprlock hyprpaper hyprshot hyprpolkitagent swaync \
-  networkmanager network-manager-applet blueman pavucontrol wireplumber \
-  ttf-jetbrains-mono-nerd gcc pkgconf gtk3 gtk-layer-shell libpulse playerctl
-```
-
-Install and enable your audio stack, NetworkManager, Bluetooth and an appropriate `xdg-desktop-portal` backend separately if they are not already configured. `expressvpnctl` comes from the ExpressVPN client and is optional. `hyprsunset` is optional. Other terminal/editor configs have additional dependencies in the package snapshots.
+For a new PC, first prepare a bootable Arch installation with a normal user, sudo,
+networking and the appropriate GPU driver. Then clone/copy this repository and run
+these commands from its root **as that user**:
 
 ```sh
-backup="$HOME/.local/state/dotfiles-backups/$(date +%Y%m%d-%H%M%S)"
-mkdir -p "$backup" "$HOME/.config"
-for dir in hypr waybar; do
-  if [ -d "$HOME/.config/$dir" ]; then
-    cp -a "$HOME/.config/$dir" "$backup/"
-  fi
-  cp -a "$dir" "$HOME/.config/"
-done
-chmod +x "$HOME/.config/waybar/expressvpn.sh" "$HOME/.config/waybar/scripts/power-menu.sh" "$HOME/.config/hypr/scripts/shortcuts.sh"
-"$HOME/.config/waybar/mixer/build.sh"
-Hyprland --verify-config -c "$HOME/.config/hypr/hyprland.lua"
-hyprctl reload
-pkill -x waybar
-waybar > "$HOME/.local/state/waybar.log" 2>&1 &
+python3 restore.py --dry-run --packages --services --shell
+python3 restore.py --packages --services --shell
 ```
 
-If Waybar is not running, start it with `waybar`. Startup apps only launch when the Hyprland session starts; reloading does not start missing daemons. The supplied bar commands assume configs are installed under `~/.config`.
+The preview changes nothing. The restore installs the portable `Packages/rice.txt`
+with a complete package upgrade, backs up and copies all rice configs, supplies the
+wallpaper, detects display/battery names, rebuilds the mixer, checks Hyprland,
+enables network/Bluetooth/audio/SSH-agent units and selects Zsh. The generated
+`~/.config/hypr/machine.lua` keeps display scale and NVIDIA preferences private.
 
-Copy `kitty`, `nvim`, `yazi`, and `starship` to `~/.config` only if you want those configurations too. Back up `~/.zshrc` before replacing it with `zsh/.zshrc`.
+To restore config files only when packages are already installed:
 
-### 🖥️ Hardware settings to review
+```sh
+python3 restore.py
+```
 
-- **Display:** `eDP-1`, scale `1.2`, near the top of `hyprland.lua`. Use `hyprctl monitors` to find your names. Closing the lid disables the panel only when another monitor is active; reopening enables it.
-- **Lid policy:** the optional logind override ignores lid events system-wide. With it installed, closing the lid on the laptop alone does **not** immediately suspend; the configured idle timers still apply. Do not install it if you prefer systemd's default lid suspend behavior.
-- **NVIDIA:** the two explicitly marked NVIDIA environment variables are preserved for this laptop. Remove them on systems without NVIDIA.
-- **Wallpaper:** provide `~/Pictures/Wallpapers/wallpaper.jpeg`, or edit the two wallpaper paths. Images are not bundled.
-- **Screenshots:** saved to `~/Pictures/Screenshots`.
-- **Night light:** add `hyprsunset` to the autostart list to use its existing schedule.
-- **Brightness:** brightness controls are not bound because `brightnessctl` is not installed in the tested setup.
+Existing machine preferences, personal `local.lua` and wallpaper are preserved.
+Each run prints a backup path; `python3 restore.py --rollback /path/to/backup`
+restores replaced files and removes introduced files. Compilation/config errors
+roll back configuration changes automatically. Package, service and shell changes
+require their explicit options and are not undone by config rollback.
+
+Log out/reboot after the full restore, then run `Hyprland` from a TTY or choose it
+in your configured display manager. See [💻 the complete install guide](docs/INSTALL.md)
+for first boot, optional apps, night light, service details and wallpaper replacement.
+
+### 🖥️ Hardware settings
+
+- **Display:** generated `hypr/machine.lua` detects the internal panel and defaults
+  to automatic scaling. Set `laptop_scale = 1.2` to reproduce the original laptop.
+- **GPU:** NVIDIA environment variables are opt-in through `nvidia_env`; select
+  drivers separately using [hardware notes](Packages/hardware.md).
+- **Battery:** restoration uses the detected system battery, excluding peripheral
+  batteries. Desktops without a battery omit that Waybar module.
+- **Night light:** set `night_light = true` or use `--night-light` for a new profile.
+  Hyprland owns its startup; do not also enable the Hyprsunset user service.
+- **Lid:** the optional logind override is available but is not installed
+  automatically. It changes system-wide lid behavior; review it before use.
+- **Wallpaper:** the bundled image is copied only when the current wallpaper is
+  absent. `--wallpaper /path/to/image.jpeg` explicitly replaces it with a backup.
+- **Snapshots:** original package snapshots include Intel/NVIDIA and games; use
+  `Packages/rice.txt` for portable desktop dependencies.
 
 ## 🛠️ Validate and troubleshoot
 
@@ -146,13 +165,13 @@ sh -n hypr/scripts/shortcuts.sh
 hyprctl configerrors
 ```
 
-For Waybar diagnostics, stop the existing instance and run `waybar -l debug` from a terminal. Check for missing commands or modules. Hover CPU / volume to check their expanded layouts. Run `python3 waybar/mixer/test-mixer.py` inside your desktop session to test the mixer with a disposable silent stream; it temporarily opens a test popup without modifying other apps' volumes. VPN tests use mocks and do not change your connection. Power, logout, lock and suspend actions should be checked manually when convenient.
+For Waybar diagnostics, stop the existing instance and run `waybar -l debug` from a terminal. Check for missing commands or modules. Hover CPU / volume to check their expanded layouts. Restore tests use temporary directories and mocks; they do not change your packages or services. Run `python3 waybar/mixer/test-mixer.py` inside your desktop session to test the mixer with a disposable silent stream; it temporarily opens a test popup without modifying other apps' volumes. VPN tests use mocks and do not change your connection. Power, logout, lock and suspend actions should be checked manually when convenient.
 
-Rollback: copy the backed-up `hypr` and `waybar` contents into `~/.config`, reload Hyprland, then restart Waybar. Newly introduced helpers are inert if the restored config does not reference them. Keep backups outside the repository.
+Rollback: use `python3 restore.py --rollback /path/to/printed-backup`, then log out and back in. Older manual backups can still be copied into place. Keep backups outside the repository.
 
 ## 🔐 Privacy and maintenance
 
-No credentials are required in these files. Keep VPN activation files, API tokens, SSH private keys and `.env` files outside the repository. `.gitignore` excludes common credential files, `local.lua`, backups, logs and Python caches; it cannot remove files already committed.
+No credentials are required in these files. Keep VPN activation files, API tokens, SSH private keys and `.env` files outside the repository. `.gitignore` excludes common credential files, `local.lua`, generated `machine.lua`, backups, logs and Python caches; it cannot remove files already committed.
 
 The September 2026 refresh checked tracked files and reachable Git history for common credential/token patterns and found no matches. Personal absolute home paths were replaced in the current configs, and an accidentally tracked Hyprland backup was removed. Older commits still contain the previous paths and backup; history was not rewritten. Pattern scanning is not a guarantee that arbitrary secrets cannot be present. Review `git diff --cached` before publishing.
 
@@ -167,11 +186,11 @@ Reference: [Hyprland configuration](https://wiki.hypr.land/Configuring/Start/) a
 
 ## 📄 License
 
-See [LICENSE](LICENSE): GNU General Public License, version 3. The previous README's MIT label was incorrect; the license file itself is unchanged.
+Code and configuration: [LICENSE](LICENSE), GNU General Public License, version 3. The previous README's MIT label was incorrect; the license file itself is unchanged.
 
 ### 🔋 Battery crash workaround (October 2026)
 
-Waybar 0.15.0 crashed in `Battery::refreshBatteries()` while attempting to watch a disappearing Logitech `hidpp_battery_*` device. The battery module now explicitly selects `BAT0` and adapter `AC`, avoiding peripheral battery discovery. On another machine, check `/sys/class/power_supply/` and adjust these two names in `waybar/config.jsonc`.
+Waybar 0.15.0 crashed in `Battery::refreshBatteries()` while attempting to watch a disappearing Logitech `hidpp_battery_*` device. The source config explicitly selects `BAT0` and adapter `AC`, avoiding peripheral battery discovery. The restore script replaces these with the target machine's detected system battery and adapter, or removes the module from a desktop layout.
 
 Hyprland's autostart writes Waybar output to `~/.local/state/waybar.log` (replaced at the next session start). Inspect this log and `coredumpctl list waybar` if the bar exits again. This change addresses the observed battery-watch failure, not every possible Waybar crash.
 
@@ -183,7 +202,7 @@ Browsers may expose multiple playback streams; each gets a slider. If a browser 
 
 The **Now playing** section shows tab/media titles supplied through MPRIS (using `playerctl`), and updates when the media changes. Stream labels use `media.title` or `media.name` when available. Chromium currently supplies only “Playback” for its audio streams, so these are labelled with a stream number; its player-wide media title is displayed separately. Chromium does not expose a reliable tab-to-stream mapping, and tabs without media-session metadata cannot be named by this mixer. Media titles are read in memory and are not saved to the repository or a log.
 
-The module uses Waybar's CFFI v2 interface and GTK3/GTK Layer Shell. Build after copying the configs, and rebuild after incompatible library or Waybar upgrades:
+The module uses Waybar's CFFI v2 interface and GTK3/GTK Layer Shell. The restore script builds it automatically; rebuild after incompatible library or Waybar upgrades:
 
 ```sh
 ~/.config/waybar/mixer/build.sh

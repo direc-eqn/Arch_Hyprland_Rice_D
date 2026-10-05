@@ -1,0 +1,8 @@
+# Yazi image/PDF previews, metadata actions and archive extraction.
+# Included by rice.txt; separate reference for a minimal Yazi-only installation.
+imagemagick
+poppler
+mediainfo
+perl-image-exiftool
+ffmpeg
+7zip

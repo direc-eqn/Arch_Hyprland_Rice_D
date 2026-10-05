@@ -28,3 +28,6 @@ __pycache__/
 waybar/mixer/*.so
 waybar/mixer/module.local.json
 waybar/mixer/*.so.new
+
+# Generated per-machine preferences
+hypr/machine.lua

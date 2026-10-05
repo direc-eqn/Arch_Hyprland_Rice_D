@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=ExpressVPN
+Comment=ExpressVPN VPN client
+Path=/opt/expressvpn/bin/
+Exec=env XDG_SESSION_TYPE=X11 /opt/expressvpn/bin/expressvpn-client %u
+Icon=expressvpn
+Terminal=false
+Categories=Network
+StartupWMClass=expressvpn-client
+MimeType=x-scheme-handler/expressvpn;x-scheme-handler/expressvpn-desktop;

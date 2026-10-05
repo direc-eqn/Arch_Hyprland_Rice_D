@@ -2,10 +2,11 @@
 vim.opt.clipboard = "unnamedplus"
 
 -- 2. Enable modern Neovim native autocompletion (Requires Neovim 0.12+)
-vim.o.autocomplete = true
+if vim.fn.exists("+autocomplete") == 1 then vim.o.autocomplete = true end
 
 -- 3. Load latest core UI 
-require("vim._core.ui2").enable({})
+local has_ui2, ui2 = pcall(require, "vim._core.ui2")
+if has_ui2 then ui2.enable({}) end
 
 -- 4. Load Modules
 require("options")

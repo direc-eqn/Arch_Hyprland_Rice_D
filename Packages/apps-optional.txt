@@ -1,0 +1,9 @@
+# Optional applications; do not install all snapshots on different hardware.
+chromium
+firefox
+discord
+fastfetch
+htop
+nvtop
+spotify-launcher
+steam

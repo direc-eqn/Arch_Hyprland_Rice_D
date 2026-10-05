@@ -9,16 +9,27 @@ local mainMod = "SUPER"
 local terminal = "kitty"
 local fileManager = "kitty -e yazi"
 local menu = "rofi -show drun -show-icons"
-local laptopOutput = "eDP-1" -- Find output names with: hyprctl monitors
-local laptopScale = 1.2
+-- restore.py writes machine.lua for this PC. Keep personal settings out of Git.
+local machine = { laptop_scale = "auto", nvidia_env = false, night_light = false }
+local machinePath = configHome .. "/hypr/machine.lua"
+local machineFile = io.open(machinePath, "r")
+if machineFile then
+    machineFile:close()
+    local settings = dofile(machinePath)
+    for key, value in pairs(settings) do machine[key] = value end
+end
+local laptopOutput = machine.laptop_output
+local laptopScale = machine.laptop_scale
 
 -- 2. Displays and laptop lid ----------------------------------------------------
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })
 local function enableLaptop()
+    if not laptopOutput then return end
     hl.monitor({ output = laptopOutput, mode = "preferred", position = "auto",
                  scale = laptopScale, disabled = false })
 end
 local function closeLid()
+    if not laptopOutput then return end
     -- Never disable the only display. With an external display, keep working there.
     for _, monitor in ipairs(hl.get_monitors()) do
         if monitor.name ~= laptopOutput then
@@ -35,10 +46,13 @@ hl.bind("switch:off:Lid Switch", enableLaptop)
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
 hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
--- This laptop uses NVIDIA. Remove these two lines on systems without NVIDIA.
-hl.env("LIBVA_DRIVER_NAME", "nvidia")
-hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
-hl.env("SSH_AUTH_SOCK", "$XDG_RUNTIME_DIR/ssh-agent.socket")
+-- Only force NVIDIA-specific variables when the machine profile requests them.
+if machine.nvidia_env then
+    hl.env("LIBVA_DRIVER_NAME", "nvidia")
+    hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
+end
+local runtimeDir = os.getenv("XDG_RUNTIME_DIR")
+if runtimeDir then hl.env("SSH_AUTH_SOCK", runtimeDir .. "/ssh-agent.socket") end
 hl.env("HYPRSHOT_DIR", home .. "/Pictures/Screenshots")
 
 hl.on("hyprland.start", function()
@@ -49,7 +63,10 @@ hl.on("hyprland.start", function()
     end
     -- Preserve the most recent session's bar log for crash diagnosis.
     hl.exec_cmd('mkdir -p "$HOME/.local/state" && exec waybar > "$HOME/.local/state/waybar.log" 2>&1')
-    -- To enable the schedule in hyprsunset.conf, add "hyprsunset" to the list above.
+    -- Night light has one launch owner: Hyprland. Do not also enable its user service.
+    if machine.night_light then
+        hl.exec_cmd("command -v hyprsunset >/dev/null 2>&1 && { pgrep -x hyprsunset >/dev/null || exec hyprsunset; }")
+    end
     local handle = io.popen("cat /proc/acpi/button/lid/*/state 2>/dev/null")
     if handle then
         local state = handle:read("*a")
@@ -123,8 +140,8 @@ hl.bind(mainMod .. " + SHIFT + N", hl.dsp.exec_cmd("swaync-client -d -sw"))
 hl.bind(mainMod .. " + slash", hl.dsp.exec_cmd('"' .. configHome .. '/hypr/scripts/shortcuts.sh"'))
 hl.bind(mainMod .. " + SHIFT + R", hl.dsp.exec_cmd("hyprctl reload && pkill -USR2 -x waybar"))
 
--- These work while locked; repeating volume keys are capped at 100%.
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
+-- These work while locked; volume boost matches the mixer's default 150% limit.
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
 hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"), { locked = true, repeating = true })
 hl.bind("XF86AudioMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"), { locked = true })
 hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"), { locked = true })
